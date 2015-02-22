@@ -3,14 +3,11 @@ package ru.ifmo.ctddev.bisyarina.walk;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 
 /**
  * Created by mariashka on 2/15/15.
  */
 public class FNVHash implements HashAlgorithm {
-    private static final int LENGTH = 4;
-    private static final int OFFSET = 0;
     private static final Integer p = Integer.parseUnsignedInt("16777619");
     private int offset;
     private int len;
