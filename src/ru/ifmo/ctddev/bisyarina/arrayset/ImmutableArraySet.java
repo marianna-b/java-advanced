@@ -5,13 +5,16 @@ import java.util.*;
 /**
  * Created by mariashka on 2/22/15.
  */
+@SuppressWarnings("NullableProblems")
 public class ImmutableArraySet<E> extends AbstractImmutableArraySet<E> {
-    private E[] data;
-    private int leftBound, rightBound; // left inclusive, right exclusive
+    private final E[] data;
+    private final int leftBound;
+    private final int rightBound; // left inclusive, right exclusive
 
-    ImmutableArraySet(E[] data, Comparator<E> comparator) {
+    public ImmutableArraySet(E[] data, Comparator<E> comparator) {
+        super(comparator);
+
         checkInputData(data, comparator);
-        this.comparator = comparator;
         this.data = data.clone();
         this.leftBound = 0;
         this.rightBound = data.length;
@@ -30,7 +33,7 @@ public class ImmutableArraySet<E> extends AbstractImmutableArraySet<E> {
     }
 
     private ImmutableArraySet(E[] data, Comparator<E> comparator, int l, int r) {
-        this.comparator = comparator;
+        super(comparator);
         this.data = data;
         this.leftBound = l;
         this.rightBound = r;
@@ -41,8 +44,8 @@ public class ImmutableArraySet<E> extends AbstractImmutableArraySet<E> {
         return new ImmutableArraySet<>(data, order);
     }
 
-    private ImmutableArraySet getSubCopy(ImmutableArraySet<E> set, int l, int r) {
-        return new ImmutableArraySet<>(set.data, set.comparator, l, r);
+    private ImmutableArraySet<E> getSubCopy(int l, int r) {
+        return new ImmutableArraySet<>(this.data, this.comparator, l, r);
     }
 
     private int binarySearch(E element, boolean forward, boolean inclusive) {
@@ -105,7 +108,7 @@ public class ImmutableArraySet<E> extends AbstractImmutableArraySet<E> {
     public NavigableSet<E> descendingSet() {
         E[] reversed = Arrays.copyOfRange(data, leftBound, rightBound);
         Collections.reverse(Arrays.asList(reversed));
-        return new ImmutableArraySet<E>(reversed, comparator.reversed());
+        return new ImmutableArraySet<>(reversed, comparator.reversed());
     }
 
     @Override
@@ -123,7 +126,7 @@ public class ImmutableArraySet<E> extends AbstractImmutableArraySet<E> {
             throw new IllegalArgumentException("First argument lies outside of the range");
         if (r >= rightBound)
             throw new IllegalArgumentException("Second argument lies outside of the range");
-        return new ImmutableArraySet<E>(data, comparator, l, r + 1);
+        return getSubCopy(l, r);
     }
 
     @Override
@@ -131,7 +134,7 @@ public class ImmutableArraySet<E> extends AbstractImmutableArraySet<E> {
         int r = binarySearch(e, false, b);
         if (r >= rightBound)
             throw new IllegalArgumentException("Argument lies outside of the range");
-        return new ImmutableArraySet<E>(data, comparator, leftBound, r + 1);
+        return getSubCopy(leftBound, r + 1);
     }
 
     @Override
@@ -139,7 +142,7 @@ public class ImmutableArraySet<E> extends AbstractImmutableArraySet<E> {
         int l = binarySearch(e, true, b);
         if (l < leftBound)
             throw new IllegalArgumentException("Argument lies outside of the range");
-        return new ImmutableArraySet<E>(data, comparator, l, rightBound);
+        return getSubCopy(l, rightBound);
     }
 
     @Override
@@ -156,9 +159,8 @@ public class ImmutableArraySet<E> extends AbstractImmutableArraySet<E> {
         return data[rightBound - 1];
     }
 
-
-    private class ArrayIterator<E> implements Iterator<E> {
-        private E[] data;
+    private static final class ArrayIterator<E> implements Iterator<E> {
+        private final E[] data;
         private int idx;
         private int last;
 
