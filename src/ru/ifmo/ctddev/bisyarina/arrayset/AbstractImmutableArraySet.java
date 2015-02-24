@@ -1,36 +1,34 @@
 package ru.ifmo.ctddev.bisyarina.arrayset;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.NavigableSet;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Created by mariashka on 2/22/15.
  */
-abstract class ImmutableAbstractSet<E> implements NavigableSet<E> {
+abstract class AbstractImmutableArraySet<E> implements NavigableSet<E> {
     Comparator<E> comparator;
 
-    abstract E binarySearch(E element, boolean forward, boolean strict);
+    protected abstract E binarySearchElement(E element, boolean forward, boolean inclusive);
 
     @Override
     public E lower(E e) {
-        return binarySearch(e, true, true);
+        return binarySearchElement(e, true, false);
     }
 
     @Override
     public E floor(E e) {
-        return binarySearch(e, true, false);
+        return binarySearchElement(e, true, true);
     }
 
     @Override
     public E ceiling(E e) {
-        return binarySearch(e, false, false);
+        return binarySearchElement(e, false, true);
     }
 
     @Override
     public E higher(E e) {
-        return binarySearch(e, false, true);
+        return binarySearchElement(e, false, false);
     }
 
     @Override
@@ -44,13 +42,43 @@ abstract class ImmutableAbstractSet<E> implements NavigableSet<E> {
     }
 
     @Override
+    public <T> T[] toArray(T[] ts) {
+        int s = this.size();
+        T[] array = ts.length >= s ? ts : (T[]) (Array.newInstance(ts.getClass().getComponentType(), s));
+        Iterator iterator = this.iterator();
+
+        for (int i = 0; i < array.length; ++i) {
+            if (!iterator.hasNext()) {
+                if (ts == array) {
+                    array[i] = null;
+                } else {
+                    if (ts.length < i) {
+                        return Arrays.copyOf(array, i);
+                    }
+
+                    System.arraycopy(array, 0, ts, 0, i);
+                    if (ts.length > i) {
+                        ts[i] = null;
+                    }
+                }
+
+                return ts;
+            }
+
+            array[i] = (T) iterator.next();
+        }
+
+        return array;
+    }
+
+    @Override
     public boolean isEmpty() {
         return size() == 0;
     }
 
     @Override
     public boolean contains(Object o) {
-        return binarySearch((E) o, true, false) != null;
+        return binarySearchElement((E) o, true, true) != null;
     }
 
     @Override
@@ -67,7 +95,7 @@ abstract class ImmutableAbstractSet<E> implements NavigableSet<E> {
     public boolean containsAll(Collection<?> collection) {
         Iterator iterator = collection.iterator();
         while (iterator.hasNext()) {
-            if (contains(iterator.next()))
+            if (!contains(iterator.next()))
                 return false;
         }
         return true;
@@ -91,6 +119,21 @@ abstract class ImmutableAbstractSet<E> implements NavigableSet<E> {
     @Override
     public void clear() {
         throw new UnsupportedOperationException("clear");
+    }
+
+    @Override
+    public SortedSet<E> subSet(E e, E e1) {
+        return subSet(e, true, e1, false);
+    }
+
+    @Override
+    public SortedSet<E> headSet(E e) {
+        return headSet(e, false);
+    }
+
+    @Override
+    public SortedSet<E> tailSet(E e) {
+        return tailSet(e, true);
     }
 
     @Override
