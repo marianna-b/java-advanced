@@ -5,10 +5,11 @@ import java.util.*;
 /**
  * Created by mariashka on 2/22/15.
  */
+@SuppressWarnings("NullableProblems")
 public class ArraySet<E> extends AbstractImmutableArraySet<E> {
     private List<E> data;
-    private boolean reversed;
-    private Comparator<E> actualComparator;
+    private final boolean reversed;
+    private final Comparator<E> actualComparator;
 
     private void removeDoubleElements() {
         Collections.sort(data, actualComparator);
@@ -128,7 +129,7 @@ public class ArraySet<E> extends AbstractImmutableArraySet<E> {
 
     @Override
     public NavigableSet<E> subSet(E e, boolean b, E e1, boolean b1) {
-        if ((!reversed && actualComparator.compare(e, e1) > 0) && (reversed && actualComparator.compare(e, e1) < 0))
+        if ((!reversed && actualComparator.compare(e, e1) > 0) || (reversed && actualComparator.compare(e, e1) < 0))
             throw new IllegalArgumentException("First argument is greater then second");
 
         int l = Math.max(binarySearch(e, false, b), 0);
@@ -140,9 +141,9 @@ public class ArraySet<E> extends AbstractImmutableArraySet<E> {
         }
         r = r < size() ? r + 1 : r;
         if (r <= l) {
-            return new ArraySet<E>();
+            return new ArraySet<>();
         }
-        return new ArraySet<E>(data.subList(l, r), comparator, actualComparator, reversed);
+        return new ArraySet<>(data.subList(l, r), comparator, actualComparator, reversed);
     }
 
     @Override
@@ -150,10 +151,10 @@ public class ArraySet<E> extends AbstractImmutableArraySet<E> {
         int r = binarySearch(e, true, b);
         if (!reversed) {
             r = r < size() ? r + 1 : r;
-            return new ArraySet<E>(data.subList(0, r), comparator, actualComparator, reversed);
+            return new ArraySet<>(data.subList(0, r), comparator, actualComparator, reversed);
         } else {
             r = Math.max(r, 0);
-            return new ArraySet<E>(data.subList(r, size()), comparator, actualComparator, reversed);
+            return new ArraySet<>(data.subList(r, size()), comparator, actualComparator, reversed);
         }
     }
 
@@ -161,10 +162,10 @@ public class ArraySet<E> extends AbstractImmutableArraySet<E> {
     public NavigableSet<E> tailSet(E e, boolean b) {
         int l = Math.max(binarySearch(e, false, b), 0);
         if (!reversed) {
-            return new ArraySet<E>(data.subList(l, size()), comparator, actualComparator, reversed);
+            return new ArraySet<>(data.subList(l, size()), comparator, actualComparator, reversed);
         } else {
             l = l < size() ? l + 1 : l;
-            return new ArraySet<E>(data.subList(0, l), comparator, actualComparator, reversed);
+            return new ArraySet<>(data.subList(0, l), comparator, actualComparator, reversed);
         }
     }
 
@@ -191,7 +192,7 @@ public class ArraySet<E> extends AbstractImmutableArraySet<E> {
     }
 
     private static final class ArrayIterator<E> implements Iterator<E> {
-        private List<E> data;
+        private final List<E> data;
         private int idx;
         private boolean reversed;
 
