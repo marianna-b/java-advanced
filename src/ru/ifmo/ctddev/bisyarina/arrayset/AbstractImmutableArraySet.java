@@ -1,13 +1,16 @@
 package ru.ifmo.ctddev.bisyarina.arrayset;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
  * Created by mariashka on 2/22/15.
  */
 abstract class AbstractImmutableArraySet<E> implements NavigableSet<E> {
-    Comparator<E> comparator;
+    protected Comparator<E> comparator;
+
+    protected AbstractImmutableArraySet(Comparator<E> comparator) {
+        this.comparator = comparator;
+    }
 
     protected abstract E binarySearchElement(E element, boolean forward, boolean inclusive);
 
@@ -41,35 +44,6 @@ abstract class AbstractImmutableArraySet<E> implements NavigableSet<E> {
         throw new UnsupportedOperationException("pollLast");
     }
 
-    @Override
-    public <T> T[] toArray(T[] ts) {
-        int s = this.size();
-        T[] array = ts.length >= s ? ts : (T[]) (Array.newInstance(ts.getClass().getComponentType(), s));
-        Iterator iterator = this.iterator();
-
-        for (int i = 0; i < array.length; ++i) {
-            if (!iterator.hasNext()) {
-                if (ts == array) {
-                    array[i] = null;
-                } else {
-                    if (ts.length < i) {
-                        return Arrays.copyOf(array, i);
-                    }
-
-                    System.arraycopy(array, 0, ts, 0, i);
-                    if (ts.length > i) {
-                        ts[i] = null;
-                    }
-                }
-
-                return ts;
-            }
-
-            array[i] = (T) iterator.next();
-        }
-
-        return array;
-    }
 
     @Override
     public boolean isEmpty() {
@@ -78,6 +52,7 @@ abstract class AbstractImmutableArraySet<E> implements NavigableSet<E> {
 
     @Override
     public boolean contains(Object o) {
+        // Cannot check type Object vs generic E
         return binarySearchElement((E) o, true, true) != null;
     }
 
@@ -94,6 +69,8 @@ abstract class AbstractImmutableArraySet<E> implements NavigableSet<E> {
     @Override
     public boolean containsAll(Collection<?> collection) {
         Iterator iterator = collection.iterator();
+        // Cannot iterate over Collection<?>, because of unknown type\
+        //noinspection WhileLoopReplaceableByForEach
         while (iterator.hasNext()) {
             if (!contains(iterator.next()))
                 return false;
@@ -138,6 +115,6 @@ abstract class AbstractImmutableArraySet<E> implements NavigableSet<E> {
 
     @Override
     public Comparator<? super E> comparator() {
-        return this.comparator;
+        return comparator;
     }
 }
