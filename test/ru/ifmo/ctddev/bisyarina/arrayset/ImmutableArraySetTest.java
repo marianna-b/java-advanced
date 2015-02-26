@@ -58,8 +58,7 @@ public class ImmutableArraySetTest extends TestCase {
         TreeSet<Integer> treeSet1 = (TreeSet<Integer>) treeSet.descendingSet();
         ArraySet<Integer> integerArraySet1 = (ArraySet<Integer>) integerArraySet.descendingSet();
 
-        //assertEquals(treeSet1.floor(3), integerArraySet1.floor(3));
-
+        assertEquals(treeSet1.floor(3), integerArraySet1.floor(3));
         assertEquals(treeSet1.subSet(3, true, -1000, true).size(), integerArraySet1.subSet(3, true, -1000, true).size());
 
     }

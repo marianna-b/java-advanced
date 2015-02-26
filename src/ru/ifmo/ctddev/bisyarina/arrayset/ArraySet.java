@@ -7,81 +7,32 @@ import java.util.*;
  */
 @SuppressWarnings("NullableProblems")
 public class ArraySet<E> extends AbstractImmutableArraySet<E> {
-    private List<E> data;
-    private final boolean reversed;
-    private final Comparator<E> actualComparator;
-
-    private void removeDoubleElements() {
-        Collections.sort(data, actualComparator);
-        ArrayList<E> list = new ArrayList<>();
-        for (E aData : data) {
-            if (list.size() > 0) {
-                if (actualComparator.compare(list.get(list.size() - 1), aData) != 0) {
-                    list.add(aData);
-                }
-            } else {
-                list.add(aData);
-            }
-        }
-        data = list;
-    }
+    private ReversibleArrayList<E> data;
 
     public ArraySet() {
         super(null);
-        this.actualComparator = (Comparator<E>) Comparator.naturalOrder();
-        this.data = new ArrayList<>();
-        this.reversed = false;
+        this.data = new ReversibleArrayList<>();
     }
 
     public ArraySet(Collection<E> collection) {
         super(null);
-        this.actualComparator = (Comparator<E>) Comparator.naturalOrder();
-        this.data = new ArrayList<>(collection);
-        this.reversed = false;
-        removeDoubleElements();
+        this.data = new ReversibleArrayList<E>(collection, null);
     }
 
     public ArraySet(Collection<E> collection, Comparator<E> comparator) {
         super(comparator);
-        this.actualComparator = comparator;
-        this.data = new ArrayList<>(collection);
-        this.reversed = false;
-        removeDoubleElements();
+        this.data = new ReversibleArrayList<>(collection, comparator);
     }
 
-    private ArraySet(List<E> list, Comparator<E> comparator1, Comparator<E> comparator2, boolean reversed) {
+    private ArraySet(ReversibleArrayList<E> list, Comparator<E> comparator1) {
         super(comparator1);
-        this.actualComparator = comparator2;
         this.data = list;
-        this.reversed = reversed;
-    }
-
-    private int binarySearch(E element, boolean forward, boolean inclusive) {
-        int idx = Collections.binarySearch(data, element, this.comparator);
-        if (idx >= 0) {
-            if (inclusive) {
-                return idx;
-            } else {
-                if (forward ^ reversed) {
-                    return idx - 1;
-                } else {
-                    return idx + 1;
-                }
-            }
-        } else {
-            idx = (idx + 1) * -1;
-            if (forward ^ reversed) {
-                return idx - 1;
-            } else {
-                return idx;
-            }
-        }
     }
 
     @Override
     protected E binarySearchElement(E element, boolean forward, boolean inclusive) {
-        int idx;
-        if ((idx = binarySearch(element, forward, inclusive)) < 0 || idx >= size()) {
+        int idx = data.binarySearch(element, forward, inclusive);
+        if (idx < 0 || idx >= size()) {
             return null;
         } else {
             return data.get(idx);
@@ -95,124 +46,76 @@ public class ArraySet<E> extends AbstractImmutableArraySet<E> {
 
     @Override
     public Iterator<E> iterator() {
-        return new ArrayIterator<>(data, reversed);
-    }
-
-    @Override
-    public Object[] toArray() {
-        Object[] newArray = data.toArray();
-        if (reversed) {
-            Collections.reverse(Arrays.asList(newArray));
-        }
-        return newArray;
-    }
-
-
-    @Override
-    public <T> T[] toArray(T[] ts) {
-        T[] newArray = data.toArray(ts);
-        if (reversed) {
-            Collections.reverse(Arrays.asList(newArray));
-        }
-        return newArray;
+        return new ArrayIterator<>(data);
     }
 
     @Override
     public NavigableSet<E> descendingSet() {
-        return new ArraySet<>(data, this.comparator, this.actualComparator, !reversed);
+        if (comparator == null) {
+            return new ArraySet<E>(data.reverse(), (Comparator<E>) Comparator.naturalOrder().reversed());
+        }
+        return new ArraySet<>(data.reverse(), comparator.reversed());
     }
 
     @Override
     public Iterator<E> descendingIterator() {
-        return new ArrayIterator<>(data, !reversed);
+        return new ArrayIterator<>(data.reverse());
     }
 
     @Override
     public NavigableSet<E> subSet(E e, boolean b, E e1, boolean b1) {
-        if ((!reversed && actualComparator.compare(e, e1) > 0) || (reversed && actualComparator.compare(e, e1) < 0))
-            throw new IllegalArgumentException("First argument is greater then second");
-
-        int l = Math.max(binarySearch(e, false, b), 0);
-        int r = binarySearch(e1, true, b1);
-        if (reversed) {
-            int x = l;
-            l = r;
-            r = x;
+        if (compare(e, e1) > 0) {
+            throw new IllegalArgumentException("First argument is greater than second");
         }
+
+        int l = Math.max(data.binarySearch(e, false, b), 0);
+        int r = data.binarySearch(e1, true, b1);
         r = r < size() ? r + 1 : r;
         if (r <= l) {
             return new ArraySet<>();
         }
-        return new ArraySet<>(data.subList(l, r), comparator, actualComparator, reversed);
+        return new ArraySet<>(data.subList(l, r), comparator);
     }
 
     @Override
     public NavigableSet<E> headSet(E e, boolean b) {
-        int r = binarySearch(e, true, b);
-        if (!reversed) {
-            r = r < size() ? r + 1 : r;
-            return new ArraySet<>(data.subList(0, r), comparator, actualComparator, reversed);
-        } else {
-            r = Math.max(r, 0);
-            return new ArraySet<>(data.subList(r, size()), comparator, actualComparator, reversed);
-        }
+        int r = data.binarySearch(e, true, b);
+        r = r < size() ? r + 1 : r;
+        return new ArraySet<>(data.subList(0, r), comparator);
     }
 
     @Override
     public NavigableSet<E> tailSet(E e, boolean b) {
-        int l = Math.max(binarySearch(e, false, b), 0);
-        if (!reversed) {
-            return new ArraySet<>(data.subList(l, size()), comparator, actualComparator, reversed);
-        } else {
-            l = l < size() ? l + 1 : l;
-            return new ArraySet<>(data.subList(0, l), comparator, actualComparator, reversed);
-        }
+        int l = Math.max(data.binarySearch(e, false, b), 0);
+        return new ArraySet<>(data.subList(l, size()), comparator);
     }
 
     @Override
     public E first() {
         if (size() == 0)
             throw new NoSuchElementException("Set is empty. No lowest element.");
-        if (reversed) {
-            return data.get(size() - 1);
-        } else {
-            return data.get(0);
-        }
+        return data.get(0);
     }
 
     @Override
     public E last() {
         if (size() == 0)
             throw new NoSuchElementException("Set is empty. No greatest element.");
-        if (reversed) {
-            return data.get(0);
-        } else {
-            return data.get(size() - 1);
-        }
+        return data.get(size() - 1);
     }
 
     private static final class ArrayIterator<E> implements Iterator<E> {
-        private final List<E> data;
+        private final ReversibleArrayList<E> data;
         private int idx;
-        private boolean reversed;
 
-        ArrayIterator(List<E> data, boolean reversed) {
+        ArrayIterator(ReversibleArrayList<E> data) {
             this.data = data;
-            this.reversed = reversed;
-            if (reversed) {
-                idx = data.size() - 1;
-            } else {
-                idx = 0;
-            }
+            idx = 0;
         }
 
         @Override
         public boolean hasNext() {
-            if (reversed) {
-                return idx > -1;
-            } else {
-                return idx < data.size();
-            }
+            return idx < data.size();
         }
 
         @Override
@@ -221,17 +124,21 @@ public class ArraySet<E> extends AbstractImmutableArraySet<E> {
                 throw new NoSuchElementException();
             }
             int oldIdx = idx;
-            if (reversed) {
-                idx--;
-            } else {
-                idx++;
-            }
+            idx++;
             return data.get(oldIdx);
         }
 
         @Override
         public void remove() {
             throw new UnsupportedOperationException("remove");
+        }
+    }
+
+    private int compare(E e1, E e2) {
+        if (comparator == null) {
+            return ((Comparable<E>) e1).compareTo(e2);
+        } else {
+            return comparator.compare(e1, e2);
         }
     }
 }
