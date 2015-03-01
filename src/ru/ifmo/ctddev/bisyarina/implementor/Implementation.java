@@ -66,12 +66,12 @@ public class Implementation {
     private void initMethodsByClass(Class curr) {
         int size = methods.size();
         Method[] currMethods = curr.getDeclaredMethods();
-        for (int i = 0; i < currMethods.length; i++) {
-            addMethod(currMethods[i], size);
+        for (Method currMethod : currMethods) {
+            addMethod(currMethod, size);
         }
         Class[] interfaces = curr.getInterfaces();
-        for (int i = 0; i < interfaces.length; i++) {
-            initMethodsByClass(interfaces[i]);
+        for (Class anInterface : interfaces) {
+            initMethodsByClass(anInterface);
         }
     }
 
@@ -83,7 +83,7 @@ public class Implementation {
             String currName = m.getName();
             Class<?>[] currParameters = m.getParameterTypes();
             for (int j = 0; j < size; j++) {
-                if (!methods.get(j).equals(currName) || !equalParameters(currParameters, methods.get(j).getParameterTypes())) {
+                if (!methods.get(j).getName().equals(currName) || !equalParameters(currParameters, methods.get(j).getParameterTypes())) {
                     methods.add(m);
                 }
             }
@@ -124,5 +124,9 @@ public class Implementation {
 
     public String toString() {
         return null;
+    }
+
+    public String getName() {
+        return name;
     }
 }
