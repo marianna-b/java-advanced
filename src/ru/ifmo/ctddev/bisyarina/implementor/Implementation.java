@@ -3,6 +3,7 @@ package ru.ifmo.ctddev.bisyarina.implementor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class Implementation {
     private List<Method> methods;
     private List<Class> subClasses;
     private List<Constructor> constructors;
+    private List<String> imports;
 
     private List<Implementation> subClassImpl;
 
@@ -27,15 +29,97 @@ public class Implementation {
             fields = Arrays.asList(c.getDeclaredFields());
             constructors = Arrays.asList(c.getDeclaredConstructors());
             subClasses = Arrays.asList(c.getDeclaredClasses());
-            methods = Arrays.asList(c.getDeclaredMethods());
-            initBySuperClassMethods();
+
+            initMethods();
+            initImports();
         } catch (ClassNotFoundException e) {
-            // ToDo handle exception
+            System.err.println("Class was not found");
         }
     }
 
-    private void initBySuperClassMethods() {
+    private void initImports() {
+        for (Field field : fields) {
+            imports.add(field.getType().getCanonicalName());
+        }
+        for (Constructor constructor : constructors) {
+            Class[] parameters = constructor.getParameterTypes();
+            for (Class parameter : parameters) {
+                imports.add(parameter.getCanonicalName());
+            }
+        }
+        for (Method method : methods) {
+            Class[] parameters = method.getParameterTypes();
+            for (Class parameter : parameters) {
+                imports.add(parameter.getCanonicalName());
+            }
+        }
+    }
 
+    private void initMethods() {
+        Class curr = c;
+        while (curr != null) {
+            initMethodsByClass(curr);
+            curr = curr.getSuperclass();
+        }
+    }
+
+    private void initMethodsByClass(Class curr) {
+        int size = methods.size();
+        Method[] currMethods = curr.getDeclaredMethods();
+        for (int i = 0; i < currMethods.length; i++) {
+            addMethod(currMethods[i], size);
+        }
+        Class[] interfaces = curr.getInterfaces();
+        for (int i = 0; i < interfaces.length; i++) {
+            initMethodsByClass(interfaces[i]);
+        }
+    }
+
+    private void addMethod(Method m, int size) {
+        int modifiers = m.getModifiers();
+
+        if (modifiers == Modifier.PUBLIC || modifiers == Modifier.PROTECTED
+                || (m.getDeclaringClass() == c && modifiers == Modifier.PRIVATE)) {
+            String currName = m.getName();
+            Class<?>[] currParameters = m.getParameterTypes();
+            for (int j = 0; j < size; j++) {
+                if (!methods.get(j).equals(currName) || !equalParameters(currParameters, methods.get(j).getParameterTypes())) {
+                    methods.add(m);
+                }
+            }
+        }
+    }
+
+    private boolean equalParameters(Class<?>[] l, Class<?>[] r) {
+        if (l.length != r.length) {
+            return false;
+        }
+        for (int i = 0; i < l.length; i++) {
+            if (!l[i].equals(r[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String toStringConstructor(int idx) {
+        return null;
+    }
+
+    private String toStringSubClass(int idx) {
+        return null;
+    }
+
+    private String toStringField(int idx) {
+        return null;
+    }
+
+    private String toStringMethod(int idx) {
+        return null;
+    }
+
+    private String toStringImport(int idx) {
+        return null;
     }
 
     public String toString() {
