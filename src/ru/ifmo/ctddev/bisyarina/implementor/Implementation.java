@@ -46,13 +46,13 @@ public class Implementation {
         initMethods(c.getSuperclass());
         Method[] m = c.getDeclaredMethods();
         int size = methods.size();
-        for (int i = 0; i < m.length; i++) {
-            int modifiers = m[i].getModifiers();
+        for (Method aM : m) {
+            int modifiers = aM.getModifiers();
             if (Modifier.isAbstract(modifiers)) {
-                methods.add(m[i]);
+                methods.add(aM);
             } else {
                 if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
-                    addMethod(m[i], size);
+                    addMethod(aM, size);
                 }
             }
         }
@@ -81,7 +81,55 @@ public class Implementation {
     }
 
     private String toStringMethod(int idx) {
-        return null;
+        Method m = methods.get(idx);
+        String current = "";
+        current += getAccessModString(m) + m.getReturnType().getName() + " " + m.getName();
+        current += "(" + toStringParameters(m.getParameterTypes()) + ")";
+        current += "{" + "\n";
+        current += "return " + getDefaultValueString(m.getReturnType()) + ";";
+        current += "\n" + "}";
+        return current;
+    }
+
+    private String getAccessModString(Method m) {
+        int modifiers = m.getModifiers();
+        if (Modifier.isProtected(modifiers)) {
+            return "protected ";
+        }
+        if (Modifier.isPublic(modifiers)) {
+            return "public ";
+        }
+        if (Modifier.isPrivate(modifiers)) {
+            return "private ";
+        }
+        return "";
+    }
+
+    private String getDefaultValueString(Class cl) {
+        if (c.isPrimitive()) {
+            if (c.equals(boolean.class)) {
+                return "false";
+            } else {
+                if (c.equals(char.class)) {
+                    return "'" + "\u0000" + "'";
+                } else {
+                    return "0";
+                }
+            }
+        } else {
+            return "null";
+        }
+    }
+
+    private String toStringParameters(Class<?>[] parameterTypes) {
+        String curr = "";
+        for (int i = 0; i < parameterTypes.length; i++) {
+            curr += parameterTypes[i].getName();
+            if (i < parameterTypes.length - 1) {
+                curr += ", ";
+            }
+        }
+        return curr;
     }
 
     private String toStringImport(int idx) {
