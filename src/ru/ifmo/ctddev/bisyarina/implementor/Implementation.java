@@ -3,6 +3,7 @@ package ru.ifmo.ctddev.bisyarina.implementor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ public class Implementation {
     private Class c;
     private String name;
 
+    private Package pack;
     private List<Method> methods = new LinkedList<>();
     private List<String> imports = new ArrayList<>();
 
@@ -22,14 +24,19 @@ public class Implementation {
         try {
             c = Class.forName(name);
             this.name = name + "Impl";
+
+            initPackage();
             initInterfaceMethods();
             initSuperClassMethods(c);
             initImports();
-            //todo import implemented package
-            //todo look up interfaces
+
         } catch (ClassNotFoundException e) {
             System.err.println("Class was not found");
         }
+    }
+
+    private void initPackage() {
+        pack = c.getPackage();
     }
 
     private void initInterfaceMethods() {
@@ -54,11 +61,25 @@ public class Implementation {
     }
 
     private void initImports() {
+        List<String> currImports = new ArrayList<>();
+        currImports.add(c.getCanonicalName());
         for (Method method : methods) {
             Class[] parameters = method.getParameterTypes();
-            imports.add(method.getReturnType().getCanonicalName());
+            currImports.add(method.getReturnType().getCanonicalName());
+
             for (Class parameter : parameters) {
-                imports.add(parameter.getCanonicalName());
+                currImports.add(parameter.getCanonicalName());
+            }
+        }
+
+        Collections.sort(currImports);
+        for (String currImport : currImports) {
+            if (imports.size() > 0) {
+                if (!imports.get(imports.size() - 1).equals(currImport)) {
+                    imports.add(currImport);
+                }
+            } else {
+                imports.add(currImport);
             }
         }
     }
@@ -157,7 +178,7 @@ public class Implementation {
     }
 
     private String toStringImport(int idx) {
-        return null;
+        return "import " + imports.get(idx) + ";";
     }
 
     public String toString() {
