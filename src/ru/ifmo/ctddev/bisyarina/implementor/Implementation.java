@@ -22,10 +22,34 @@ public class Implementation {
         try {
             c = Class.forName(name);
             this.name = name + "Impl";
-            initMethods(c);
+            initInterfaceMethods();
+            initSuperClassMethods(c);
             initImports();
+            //todo import implemented package
+            //todo look up interfaces
         } catch (ClassNotFoundException e) {
             System.err.println("Class was not found");
+        }
+    }
+
+    private void initInterfaceMethods() {
+        Class[] interfaces = c.getInterfaces();
+        for (Class anInterface : interfaces) {
+            addInterfaceMethods(anInterface);
+        }
+    }
+
+    private void addInterfaceMethods(Class cl) {
+        Class[] interfaces = cl.getInterfaces();
+        for (Class anInterface : interfaces) {
+            addInterfaceMethods(anInterface);
+        }
+        Method[] m = cl.getDeclaredMethods();
+        for (Method aM : m) {
+            int modifiers = aM.getModifiers();
+            if (Modifier.isProtected(modifiers) || Modifier.isPublic(modifiers)) {
+                methods.add(aM);
+            }
         }
     }
 
@@ -39,11 +63,11 @@ public class Implementation {
         }
     }
 
-    private void initMethods(Class c) {
+    private void initSuperClassMethods(Class c) {
         if (c == null) {
             return;
         }
-        initMethods(c.getSuperclass());
+        initSuperClassMethods(c.getSuperclass());
         Method[] m = c.getDeclaredMethods();
         int size = methods.size();
         for (Method aM : m) {
@@ -52,13 +76,13 @@ public class Implementation {
                 methods.add(aM);
             } else {
                 if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
-                    addMethod(aM, size);
+                    removeMethod(aM, size);
                 }
             }
         }
     }
 
-    private void addMethod(Method m, int size) {
+    private void removeMethod(Method m, int size) {
         String currName = m.getName();
         Class[] currParameters = m.getParameterTypes();
         for (int j = 0; j < size; j++) {
