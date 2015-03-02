@@ -1,10 +1,9 @@
 package ru.ifmo.ctddev.bisyarina.implementor;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -14,11 +13,8 @@ public class Implementation {
     private Class c;
     private String name;
 
-    private List<Field> fields;
-    private List<Method> methods;
-    private List<Class> subClasses;
-    private List<Constructor> constructors;
-    private List<String> imports;
+    private List<Method> methods = new LinkedList<>();
+    private List<String> imports = new ArrayList<>();
 
     private List<Implementation> subClassImpl;
 
@@ -26,11 +22,7 @@ public class Implementation {
         try {
             c = Class.forName(name);
             this.name = name + "Impl";
-            fields = Arrays.asList(c.getDeclaredFields());
-            constructors = Arrays.asList(c.getDeclaredConstructors());
-            subClasses = Arrays.asList(c.getDeclaredClasses());
-
-            initMethods();
+            initMethods(c);
             initImports();
         } catch (ClassNotFoundException e) {
             System.err.println("Class was not found");
@@ -38,54 +30,40 @@ public class Implementation {
     }
 
     private void initImports() {
-        for (Field field : fields) {
-            imports.add(field.getType().getCanonicalName());
-        }
-        for (Constructor constructor : constructors) {
-            Class[] parameters = constructor.getParameterTypes();
-            for (Class parameter : parameters) {
-                imports.add(parameter.getCanonicalName());
-            }
-        }
         for (Method method : methods) {
             Class[] parameters = method.getParameterTypes();
+            imports.add(method.getReturnType().getCanonicalName());
             for (Class parameter : parameters) {
                 imports.add(parameter.getCanonicalName());
             }
         }
     }
 
-    private void initMethods() {
-        Class curr = c;
-        while (curr != null) {
-            initMethodsByClass(curr);
-            curr = curr.getSuperclass();
+    private void initMethods(Class c) {
+        if (c == null) {
+            return;
         }
-    }
-
-    private void initMethodsByClass(Class curr) {
+        initMethods(c.getSuperclass());
+        Method[] m = c.getDeclaredMethods();
         int size = methods.size();
-        Method[] currMethods = curr.getDeclaredMethods();
-        for (Method currMethod : currMethods) {
-            addMethod(currMethod, size);
-        }
-        Class[] interfaces = curr.getInterfaces();
-        for (Class anInterface : interfaces) {
-            initMethodsByClass(anInterface);
+        for (int i = 0; i < m.length; i++) {
+            int modifiers = m[i].getModifiers();
+            if (Modifier.isAbstract(modifiers)) {
+                methods.add(m[i]);
+            } else {
+                if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
+                    addMethod(m[i], size);
+                }
+            }
         }
     }
 
     private void addMethod(Method m, int size) {
-        int modifiers = m.getModifiers();
-
-        if (modifiers == Modifier.PUBLIC || modifiers == Modifier.PROTECTED
-                || (m.getDeclaringClass() == c && modifiers == Modifier.PRIVATE)) {
-            String currName = m.getName();
-            Class<?>[] currParameters = m.getParameterTypes();
-            for (int j = 0; j < size; j++) {
-                if (!methods.get(j).getName().equals(currName) || !equalParameters(currParameters, methods.get(j).getParameterTypes())) {
-                    methods.add(m);
-                }
+        String currName = m.getName();
+        Class[] currParameters = m.getParameterTypes();
+        for (int j = 0; j < size; j++) {
+            if (methods.get(j).getName().equals(currName) && equalParameters(currParameters, methods.get(j).getParameterTypes())) {
+                methods.remove(j);
             }
         }
     }
@@ -100,18 +78,6 @@ public class Implementation {
             }
         }
         return true;
-    }
-
-    private String toStringConstructor(int idx) {
-        return null;
-    }
-
-    private String toStringSubClass(int idx) {
-        return null;
-    }
-
-    private String toStringField(int idx) {
-        return null;
     }
 
     private String toStringMethod(int idx) {
