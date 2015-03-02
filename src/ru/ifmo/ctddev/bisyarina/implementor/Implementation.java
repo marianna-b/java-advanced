@@ -18,8 +18,6 @@ public class Implementation {
     private List<Method> methods = new LinkedList<>();
     private List<String> imports = new ArrayList<>();
 
-    private List<Implementation> subClassImpl;
-
     public Implementation(String name) {
         try {
             c = Class.forName(name);
