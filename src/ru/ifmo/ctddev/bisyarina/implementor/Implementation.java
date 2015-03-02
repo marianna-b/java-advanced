@@ -123,10 +123,14 @@ public class Implementation {
         return true;
     }
 
+    private String toStringPackage() {
+        return "package " + pack.getName() + ";";
+    }
+
     private String toStringMethod(int idx) {
         Method m = methods.get(idx);
         String current = "";
-        current += getAccessModString(m) + m.getReturnType().getName() + " " + m.getName();
+        current += getAccessModString(m.getModifiers()) + m.getReturnType().getName() + " " + m.getName();
         current += "(" + toStringParameters(m.getParameterTypes()) + ")";
         current += "{" + "\n";
         current += "return " + getDefaultValueString(m.getReturnType()) + ";";
@@ -134,8 +138,7 @@ public class Implementation {
         return current;
     }
 
-    private String getAccessModString(Method m) {
-        int modifiers = m.getModifiers();
+    private String getAccessModString(int modifiers) {
         if (Modifier.isProtected(modifiers)) {
             return "protected ";
         }
@@ -149,11 +152,11 @@ public class Implementation {
     }
 
     private String getDefaultValueString(Class cl) {
-        if (c.isPrimitive()) {
-            if (c.equals(boolean.class)) {
+        if (cl.isPrimitive()) {
+            if (cl.equals(boolean.class)) {
                 return "false";
             } else {
-                if (c.equals(char.class)) {
+                if (cl.equals(char.class)) {
                     return "'" + "\u0000" + "'";
                 } else {
                     return "0";
@@ -180,7 +183,21 @@ public class Implementation {
     }
 
     public String toString() {
-        return null;
+        String file = "";
+        file += toStringPackage() + "\n\n";
+        for (int i = 0; i < imports.size(); i++) {
+            file += toStringImport(i) + "\n\n";
+        }
+        file += toStringClass() + " {\n\n";
+        for (int i = 0; i < methods.size(); i++) {
+            file += toStringMethod(i) + "\n\n";
+        }
+        file += "}";
+        return file;
+    }
+
+    private String toStringClass() {
+        return getAccessModString(c.getModifiers()) + " class " + name;
     }
 
     public String getName() {
