@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -39,9 +41,12 @@ public class Implementation {
         }
     }
 
-    private String getImplPath(File root) {
+    private String getImplPath(File root) throws IOException {
         String pack = c.getPackage().getName().replace(".", "/");
-        return root.getPath().concat("/" + pack + "/");
+
+        String path = root.getPath().concat("/" + pack + "/");
+        Files.createDirectories(Paths.get(path));
+        return path;
     }
 
     private void initInterfaceMethods() {
