@@ -1,5 +1,6 @@
 package ru.ifmo.ctddev.bisyarina.implementor;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -16,6 +17,10 @@ public class Implementation {
 
     private List<Method> methods = new LinkedList<>();
     private List<String> imports = new ArrayList<>();
+
+    public void implement(Class<?> token, File root) throws ImplementException {
+        return;
+    }
 
     public Implementation(String name) {
         try {
