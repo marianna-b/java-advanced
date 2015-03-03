@@ -19,7 +19,8 @@ public class Implementor {
         }
         Implementation implementation = new Implementation(args[0]);
 
-        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(implementation.getName()), "UTF-8")) {
+        try (OutputStreamWriter writer =
+                     new OutputStreamWriter(new FileOutputStream(implementation.getName() + ".java"), "UTF-8")) {
             writer.write(implementation.toString());
         } catch (IOException e) {
             e.printStackTrace();
