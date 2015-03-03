@@ -95,16 +95,16 @@ public class Implementation {
                 methods.add(aM);
             } else {
                 if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
-                    removeMethod(aM, size);
+                    removeMethod(aM);
                 }
             }
         }
     }
 
-    private void removeMethod(Method m, int size) {
+    private void removeMethod(Method m) {
         String currName = m.getName();
         Class[] currParameters = m.getParameterTypes();
-        for (int j = 0; j < size; j++) {
+        for (int j = 0; j < methods.size(); j++) {
             if (methods.get(j).getName().equals(currName) && equalParameters(currParameters, methods.get(j).getParameterTypes())) {
                 methods.remove(j);
             }
