@@ -88,7 +88,6 @@ public class Implementation {
         }
         initSuperClassMethods(c.getSuperclass());
         Method[] m = c.getDeclaredMethods();
-        int size = methods.size();
         for (Method aM : m) {
             int modifiers = aM.getModifiers();
             if (Modifier.isAbstract(modifiers)) {
@@ -159,7 +158,11 @@ public class Implementation {
                 if (cl.equals(char.class)) {
                     return "'" + "\u0000" + "'";
                 } else {
-                    return "0";
+                    if (cl.equals(void.class)) {
+                        return "";
+                    } else {
+                        return "0";
+                    }
                 }
             }
         } else {
