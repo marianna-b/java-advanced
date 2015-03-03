@@ -14,7 +14,6 @@ public class Implementation {
     private Class c;
     private String name;
 
-    private Package pack;
     private List<Method> methods = new LinkedList<>();
     private List<String> imports = new ArrayList<>();
 
@@ -23,7 +22,6 @@ public class Implementation {
             c = Class.forName(name);
             this.name = c.getSimpleName() + "Impl";
 
-            initPackage();
             initInterfaceMethods();
             initSuperClassMethods(c);
             initImports();
@@ -31,10 +29,6 @@ public class Implementation {
         } catch (ClassNotFoundException e) {
             System.err.println("Class was not found");
         }
-    }
-
-    private void initPackage() {
-        pack = c.getPackage();
     }
 
     private void initInterfaceMethods() {
@@ -143,10 +137,6 @@ public class Implementation {
             }
         }
         return true;
-    }
-
-    private String toStringPackage() {
-        return "package " + pack.getName() + ";";
     }
 
     private String toStringMethod(int idx) {
