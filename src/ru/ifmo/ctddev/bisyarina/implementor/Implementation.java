@@ -60,16 +60,24 @@ public class Implementation {
 
     private void initImports() {
         List<String> currImports = new ArrayList<>();
-        currImports.add(c.getCanonicalName());
+        currImports.add(c.getPackage().getName() + ".*");
         for (Method method : methods) {
             Class[] parameters = method.getParameterTypes();
-            if (!method.getReturnType().isPrimitive() && !method.getReturnType().isArray()) {
-                currImports.add(method.getReturnType().getCanonicalName());
+            if (!method.getReturnType().isPrimitive()) {
+                if (!method.getReturnType().isArray()) {
+                    currImports.add(method.getReturnType().getCanonicalName());
+                } else {
+                    currImports.add(method.getReturnType().getComponentType().getCanonicalName());
+                }
             }
 
             for (Class parameter : parameters) {
-                if (!parameter.isPrimitive() && !parameter.isArray()) {
-                    currImports.add(parameter.getCanonicalName());
+                if (!parameter.isPrimitive()) {
+                    if (!parameter.isArray()) {
+                        currImports.add(parameter.getCanonicalName());
+                    } else {
+                        currImports.add(parameter.getComponentType().getCanonicalName());
+                    }
                 }
             }
         }
@@ -202,7 +210,6 @@ public class Implementation {
 
     public String toString() {
         String file = "";
-        file += toStringPackage() + "\n\n";
         for (int i = 0; i < imports.size(); i++) {
             file += toStringImport(i) + "\n\n";
         }
