@@ -66,6 +66,10 @@ public class ImplementationGenerator {
         return "import " + importStr + ";";
     }
 
+    public static String toStringPackage(Package pack) {
+        return "package " + pack.getName() + ";";
+    }
+
 
     public static String toStringClass(Class c, String name) {
         String res = getAccessModString(c.getModifiers()) + " class " + name;
@@ -77,6 +81,4 @@ public class ImplementationGenerator {
         res += c.getSimpleName();
         return res;
     }
-
-
 }
