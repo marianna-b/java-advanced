@@ -1,6 +1,9 @@
 package ru.ifmo.ctddev.bisyarina.implementor;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -19,21 +22,26 @@ public class Implementation {
     private List<String> imports = new ArrayList<>();
 
     public void implement(Class<?> token, File root) throws ImplementException {
-        return;
+        if (!token.isInterface() && !Modifier.isAbstract(token.getModifiers())) {
+            throw new ImplementException("Class is not an interface or an abstract class");
+        }
+        c = token;
+        this.name = c.getSimpleName() + "Impl";
+        initImports();
+        initInterfaceMethods();
+        initSuperClassMethods(c);
+
+        try (OutputStreamWriter writer =
+                     new OutputStreamWriter(new FileOutputStream(getImplPath(root) + getName() + ".java"), "UTF-8")) {
+            writer.write(toString());
+        } catch (IOException e) {
+            throw new ImplementException(e);
+        }
     }
 
-    public Implementation(String name) {
-        try {
-            c = Class.forName(name);
-            this.name = c.getSimpleName() + "Impl";
-
-            initInterfaceMethods();
-            initSuperClassMethods(c);
-            initImports();
-
-        } catch (ClassNotFoundException e) {
-            System.err.println("Class was not found");
-        }
+    private String getImplPath(File root) {
+        String pack = c.getPackage().getName().replace(".", "/");
+        return root.getPath().concat("/" + pack + "/");
     }
 
     private void initInterfaceMethods() {
@@ -146,12 +154,13 @@ public class Implementation {
 
     public String toString() {
         String file = "";
-        for (int i = 0; i < imports.size(); i++) {
-            file += ImplementationGenerator.toStringImport(imports.get(i)) + "\n\n";
+        file += ImplementationGenerator.toStringPackage(c.getPackage());
+        for (String anImport : imports) {
+            file += ImplementationGenerator.toStringImport(anImport) + "\n\n";
         }
         file += ImplementationGenerator.toStringClass(c, name) + " {\n\n";
-        for (int i = 0; i < methods.size(); i++) {
-            file += ImplementationGenerator.toStringMethod(methods.get(i)) + "\n\n";
+        for (Method method : methods) {
+            file += ImplementationGenerator.toStringMethod(method) + "\n\n";
         }
         file += "}";
         return file;
