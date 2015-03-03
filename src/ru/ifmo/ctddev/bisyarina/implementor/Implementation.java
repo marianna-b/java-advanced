@@ -63,10 +63,14 @@ public class Implementation {
         currImports.add(c.getCanonicalName());
         for (Method method : methods) {
             Class[] parameters = method.getParameterTypes();
-            currImports.add(method.getReturnType().getCanonicalName());
+            if (!method.getReturnType().isPrimitive() && !method.getReturnType().isArray()) {
+                currImports.add(method.getReturnType().getCanonicalName());
+            }
 
             for (Class parameter : parameters) {
-                currImports.add(parameter.getCanonicalName());
+                if (!parameter.isPrimitive() && !parameter.isArray()) {
+                    currImports.add(parameter.getCanonicalName());
+                }
             }
         }
 
