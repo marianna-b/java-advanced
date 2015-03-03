@@ -144,87 +144,17 @@ public class Implementation {
         return true;
     }
 
-    private String toStringMethod(int idx) {
-        Method m = methods.get(idx);
-        String current = "";
-        current += getAccessModString(m.getModifiers()) + m.getReturnType().getSimpleName() + " " + m.getName();
-        current += "(" + toStringParameters(m.getParameterTypes()) + ")";
-        current += "{" + "\n";
-        current += "return " + getDefaultValueString(m.getReturnType()) + ";";
-        current += "\n" + "}";
-        return current;
-    }
-
-    private String getAccessModString(int modifiers) {
-        if (Modifier.isProtected(modifiers)) {
-            return "protected ";
-        }
-        if (Modifier.isPublic(modifiers)) {
-            return "public ";
-        }
-        if (Modifier.isPrivate(modifiers)) {
-            return "private ";
-        }
-        return "";
-    }
-
-    private String getDefaultValueString(Class cl) {
-        if (cl.isPrimitive()) {
-            if (cl.equals(boolean.class)) {
-                return "false";
-            } else {
-                if (cl.equals(char.class)) {
-                    return "'" + "\u0000" + "'";
-                } else {
-                    if (cl.equals(void.class)) {
-                        return "";
-                    } else {
-                        return "0";
-                    }
-                }
-            }
-        } else {
-            return "null";
-        }
-    }
-
-    private String toStringParameters(Class<?>[] parameterTypes) {
-        String curr = "";
-        for (int i = 0; i < parameterTypes.length; i++) {
-            curr += parameterTypes[i].getSimpleName() + " a" + Integer.toString(i);
-            if (i < parameterTypes.length - 1) {
-                curr += ", ";
-            }
-        }
-        return curr;
-    }
-
-    private String toStringImport(int idx) {
-        return "import " + imports.get(idx) + ";";
-    }
-
     public String toString() {
         String file = "";
         for (int i = 0; i < imports.size(); i++) {
-            file += toStringImport(i) + "\n\n";
+            file += ImplementationGenerator.toStringImport(imports.get(i)) + "\n\n";
         }
-        file += toStringClass() + " {\n\n";
+        file += ImplementationGenerator.toStringClass(c, name) + " {\n\n";
         for (int i = 0; i < methods.size(); i++) {
-            file += toStringMethod(i) + "\n\n";
+            file += ImplementationGenerator.toStringMethod(methods.get(i)) + "\n\n";
         }
         file += "}";
         return file;
-    }
-
-    private String toStringClass() {
-        String res = getAccessModString(c.getModifiers()) + " class " + name;
-        if (c.isInterface()) {
-            res += " implements ";
-        } else {
-            res += " extends ";
-        }
-        res += c.getSimpleName();
-        return res;
     }
 
     public String getName() {
