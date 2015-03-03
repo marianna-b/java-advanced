@@ -53,7 +53,7 @@ public class Implementation {
         for (Method aM : m) {
             int modifiers = aM.getModifiers();
             if (Modifier.isProtected(modifiers) || Modifier.isPublic(modifiers)) {
-                methods.add(aM);
+                addMethod(aM);
             }
         }
     }
@@ -95,7 +95,7 @@ public class Implementation {
         for (Method aM : m) {
             int modifiers = aM.getModifiers();
             if (Modifier.isAbstract(modifiers)) {
-                methods.add(aM);
+                addMethod(aM);
             } else {
                 if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
                     removeMethod(aM);
@@ -112,6 +112,17 @@ public class Implementation {
                 methods.remove(j);
             }
         }
+    }
+
+    private void addMethod(Method m) {
+        String currName = m.getName();
+        Class[] currParameters = m.getParameterTypes();
+        for (Method method : methods) {
+            if (method.getName().equals(currName) && equalParameters(currParameters, method.getParameterTypes())) {
+                return;
+            }
+        }
+        methods.add(m);
     }
 
     private boolean equalParameters(Class<?>[] l, Class<?>[] r) {
@@ -177,7 +188,7 @@ public class Implementation {
     private String toStringParameters(Class<?>[] parameterTypes) {
         String curr = "";
         for (int i = 0; i < parameterTypes.length; i++) {
-            curr += parameterTypes[i].getSimpleName();
+            curr += parameterTypes[i].getSimpleName() + " a" + Integer.toString(i);
             if (i < parameterTypes.length - 1) {
                 curr += ", ";
             }
