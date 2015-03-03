@@ -21,7 +21,7 @@ public class Implementation {
     public Implementation(String name) {
         try {
             c = Class.forName(name);
-            this.name = name + "Impl";
+            this.name = c.getSimpleName() + "Impl";
 
             initPackage();
             initInterfaceMethods();
@@ -130,7 +130,7 @@ public class Implementation {
     private String toStringMethod(int idx) {
         Method m = methods.get(idx);
         String current = "";
-        current += getAccessModString(m.getModifiers()) + m.getReturnType().getName() + " " + m.getName();
+        current += getAccessModString(m.getModifiers()) + m.getReturnType().getSimpleName() + " " + m.getName();
         current += "(" + toStringParameters(m.getParameterTypes()) + ")";
         current += "{" + "\n";
         current += "return " + getDefaultValueString(m.getReturnType()) + ";";
@@ -170,7 +170,7 @@ public class Implementation {
     private String toStringParameters(Class<?>[] parameterTypes) {
         String curr = "";
         for (int i = 0; i < parameterTypes.length; i++) {
-            curr += parameterTypes[i].getName();
+            curr += parameterTypes[i].getSimpleName();
             if (i < parameterTypes.length - 1) {
                 curr += ", ";
             }
@@ -197,7 +197,14 @@ public class Implementation {
     }
 
     private String toStringClass() {
-        return getAccessModString(c.getModifiers()) + " class " + name;
+        String res = getAccessModString(c.getModifiers()) + " class " + name;
+        if (c.isInterface()) {
+            res += " implements ";
+        } else {
+            res += " extends ";
+        }
+        res += c.getSimpleName();
+        return res;
     }
 
     public String getName() {
