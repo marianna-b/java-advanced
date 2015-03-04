@@ -1,6 +1,7 @@
 package ru.ifmo.ctddev.bisyarina.implementor;
 
 import info.kgeorgiy.java.advanced.implementor.Impler;
+import info.kgeorgiy.java.advanced.implementor.ImplerException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,7 +29,7 @@ public class Implementation implements Impler {
     private Constructor[] constructors;
     private List<String> imports = new ArrayList<>();
 
-    public void implement(Class<?> token, File root) throws ImplementException {
+    public void implement(Class<?> token, File root) throws ImplerException {
         if (token.isPrimitive() || token.isArray()) {
             throw new ImplementException("Primitive types or arrays can't be implemented");
         }
