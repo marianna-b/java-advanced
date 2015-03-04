@@ -34,6 +34,7 @@ public class Implementation implements Impler {
             return m1.getName() + ImplementationGenerator.toStringParameterList(m1.getParameterTypes());
         }
     });
+
     private Constructor[] constructors;
     private TreeSet<String> imports = new TreeSet<>();
 
@@ -188,10 +189,10 @@ public class Implementation implements Impler {
             file += ImplementationGenerator.toStringImport(anImport) + "\n\n";
         }
 
-        file += ImplementationGenerator.toStringClass(c, name) + " {\n\n";
+        file += ImplementationGenerator.toStringClass(c, getName()) + " {\n\n";
 
         for (Constructor constructor : constructors) {
-            file += ImplementationGenerator.toStringConstructor(constructor, name) + "\n\n";
+            file += ImplementationGenerator.toStringConstructor(constructor, getName()) + "\n\n";
         }
         for (Method method : methods) {
             file += ImplementationGenerator.toStringMethod(method) + "\n\n";
@@ -201,7 +202,7 @@ public class Implementation implements Impler {
         return file;
     }
 
-    public String getName() {
+    private String getName() {
         return name;
     }
 }
