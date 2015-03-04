@@ -1,5 +1,6 @@
 package ru.ifmo.ctddev.bisyarina.implementor;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -80,5 +81,41 @@ public class ImplementationGenerator {
         }
         res += c.getSimpleName();
         return res;
+    }
+
+    public static String toStringConstructor(Constructor constructor, String name) {
+        String current = "";
+        current += getAccessModString(constructor.getModifiers()) + name;
+        current += "(" + toStringParameters(constructor.getParameterTypes()) + ")";
+        Class[] exceptions = constructor.getExceptionTypes();
+        if (exceptions.length > 0) {
+            current += " throws " + toStringParameterList(exceptions);
+        }
+        current += "{" + "\n";
+        current += "super(" + getDefaultValNameList(constructor.getParameterCount()) + ");\n";
+        current += "\n" + "}";
+        return current;
+    }
+
+    private static String getDefaultValNameList(int l) {
+        String current = "";
+        for (int i = 0; i < l; i++) {
+            current += "a" + Integer.toString(i);
+            if (i < l - 1) {
+                current += ", ";
+            }
+        }
+        return current;
+    }
+
+    private static String toStringParameterList(Class[] parameterTypes) {
+        String curr = "";
+        for (int i = 0; i < parameterTypes.length; i++) {
+            curr += parameterTypes[i].getSimpleName();
+            if (i < parameterTypes.length - 1) {
+                curr += ", ";
+            }
+        }
+        return curr;
     }
 }
