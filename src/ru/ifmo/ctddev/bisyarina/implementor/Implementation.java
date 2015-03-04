@@ -12,8 +12,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Comparator;
+import java.util.NavigableSet;
 import java.util.TreeSet;
 
 
@@ -24,7 +24,16 @@ public class Implementation implements Impler {
     private Class c;
     private String name;
 
-    private List<Method> methods = new LinkedList<>();
+    private NavigableSet<Method> methods = new TreeSet<>(new Comparator<Method>() {
+        @Override
+        public int compare(Method m1, Method m2) {
+            return toComparingString(m1).compareTo(toComparingString(m2));
+        }
+
+        private String toComparingString(Method m1) {
+            return m1.getName() + ImplementationGenerator.toStringParameterList(m1.getParameterTypes());
+        }
+    });
     private Constructor[] constructors;
     private TreeSet<String> imports = new TreeSet<>();
 
@@ -40,13 +49,13 @@ public class Implementation implements Impler {
             throw new ImplementException("Static classes can't be implemented");
         }
 
-
         try {
             if (Modifier.isPrivate(token.getDeclaredConstructor(new Class[0]).getModifiers())) {
                 throw new ImplementException("Utility classes can't be implemented");
             }
-        } catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException ignored) {
         }
+
         c = token;
         this.name = c.getSimpleName() + "Impl";
 
@@ -54,7 +63,6 @@ public class Implementation implements Impler {
         initInterfaceMethods();
         initSuperClassMethods(c);
         initImports();
-        //System.err.println(toString());
         try (OutputStreamWriter writer =
                      new OutputStreamWriter(new FileOutputStream(getImplPath(root) + getName() + ".java"), "UTF-8")) {
             writer.write(toString());
@@ -69,8 +77,8 @@ public class Implementation implements Impler {
 
     private String getImplPath(File root) throws IOException {
         String pack = c.getPackage().getName().replace(".", "/");
-
         String path = root.getPath().concat("/" + pack + "/");
+
         Files.createDirectories(Paths.get(path));
         return path;
     }
@@ -117,13 +125,7 @@ public class Implementation implements Impler {
     }
 
     private void removeMethod(Method m) {
-        String currName = m.getName();
-        Class[] currParameters = m.getParameterTypes();
-        for (int j = 0; j < methods.size(); j++) {
-            if (methods.get(j).getName().equals(currName) && equalParameters(currParameters, methods.get(j).getParameterTypes())) {
-                methods.remove(j);
-            }
-        }
+        methods.remove(m);
     }
 
     private void initImports() {
@@ -175,41 +177,26 @@ public class Implementation implements Impler {
     }
 
     private void addMethod(Method m) {
-        String currName = m.getName();
-        Class[] currParameters = m.getParameterTypes();
-        for (Method method : methods) {
-            if (method.getName().equals(currName) && equalParameters(currParameters, method.getParameterTypes())) {
-                return;
-            }
-        }
         methods.add(m);
-    }
-
-    private boolean equalParameters(Class<?>[] l, Class<?>[] r) {
-        if (l.length != r.length) {
-            return false;
-        }
-        for (int i = 0; i < l.length; i++) {
-            if (!l[i].equals(r[i])) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public String toString() {
         String file = "";
+
         file += ImplementationGenerator.toStringPackage(c.getPackage());
         for (String anImport : imports) {
             file += ImplementationGenerator.toStringImport(anImport) + "\n\n";
         }
+
         file += ImplementationGenerator.toStringClass(c, name) + " {\n\n";
+
         for (Constructor constructor : constructors) {
             file += ImplementationGenerator.toStringConstructor(constructor, name) + "\n\n";
         }
         for (Method method : methods) {
             file += ImplementationGenerator.toStringMethod(method) + "\n\n";
         }
+
         file += "}";
         return file;
     }
