@@ -13,6 +13,7 @@ public class ImplementationGenerator {
         String current = "";
         current += getAccessModString(m.getModifiers()) + m.getReturnType().getSimpleName() + " " + m.getName();
         current += "(" + toStringParameters(m.getParameterTypes()) + ")";
+
         current += "{" + "\n";
         current += "return " + getDefaultValueString(m.getReturnType()) + ";";
         current += "\n" + "}";
@@ -36,20 +37,16 @@ public class ImplementationGenerator {
         if (cl.isPrimitive()) {
             if (cl.equals(boolean.class)) {
                 return "false";
-            } else {
-                if (cl.equals(char.class)) {
-                    return "'" + "\u0000" + "'";
-                } else {
-                    if (cl.equals(void.class)) {
-                        return "";
-                    } else {
-                        return "0";
-                    }
-                }
             }
-        } else {
-            return "null";
+            if (cl.equals(char.class)) {
+                return "'" + "\u0000" + "'";
+            }
+            if (cl.equals(void.class)) {
+                return "";
+            }
+            return "0";
         }
+        return "null";
     }
 
     private static String toStringParameters(Class<?>[] parameterTypes) {
@@ -71,7 +68,6 @@ public class ImplementationGenerator {
         return "package " + pack.getName() + ";";
     }
 
-
     public static String toStringClass(Class c, String name) {
         String res = getAccessModString(c.getModifiers()) + " class " + name;
         if (c.isInterface()) {
@@ -87,17 +83,19 @@ public class ImplementationGenerator {
         String current = "";
         current += getAccessModString(constructor.getModifiers()) + name;
         current += "(" + toStringParameters(constructor.getParameterTypes()) + ")";
+
         Class[] exceptions = constructor.getExceptionTypes();
         if (exceptions.length > 0) {
             current += " throws " + toStringParameterList(exceptions);
         }
+
         current += "{" + "\n";
-        current += "super(" + getDefaultValNameList(constructor.getParameterCount()) + ");\n";
+        current += "super(" + getDefaultVarNameList(constructor.getParameterCount()) + ");\n";
         current += "\n" + "}";
         return current;
     }
 
-    private static String getDefaultValNameList(int l) {
+    private static String getDefaultVarNameList(int l) {
         String current = "";
         for (int i = 0; i < l; i++) {
             current += "a" + Integer.toString(i);
@@ -108,7 +106,7 @@ public class ImplementationGenerator {
         return current;
     }
 
-    private static String toStringParameterList(Class[] parameterTypes) {
+    public static String toStringParameterList(Class[] parameterTypes) {
         String curr = "";
         for (int i = 0; i < parameterTypes.length; i++) {
             curr += parameterTypes[i].getSimpleName();
