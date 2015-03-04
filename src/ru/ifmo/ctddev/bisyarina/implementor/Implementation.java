@@ -12,10 +12,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeSet;
 
 
 /**
@@ -27,7 +26,7 @@ public class Implementation implements Impler {
 
     private List<Method> methods = new LinkedList<>();
     private Constructor[] constructors;
-    private List<String> imports = new ArrayList<>();
+    private TreeSet<String> imports = new TreeSet<>();
 
     public void implement(Class<?> token, File root) throws ImplerException {
         if (token.isPrimitive() || token.isArray()) {
@@ -128,24 +127,23 @@ public class Implementation implements Impler {
     }
 
     private void initImports() {
-        List<String> currImports = new ArrayList<>();
-        currImports.add(c.getPackage().getName() + ".*");
+        imports.add(c.getPackage().getName() + ".*");
         for (Method method : methods) {
             Class[] parameters = method.getParameterTypes();
             if (!method.getReturnType().isPrimitive()) {
                 if (!method.getReturnType().isArray()) {
-                    currImports.add(method.getReturnType().getCanonicalName());
+                    imports.add(method.getReturnType().getCanonicalName());
                 } else {
-                    currImports.add(method.getReturnType().getComponentType().getCanonicalName());
+                    imports.add(method.getReturnType().getComponentType().getCanonicalName());
                 }
             }
 
             for (Class parameter : parameters) {
                 if (!parameter.isPrimitive()) {
                     if (!parameter.isArray()) {
-                        currImports.add(parameter.getCanonicalName());
+                        imports.add(parameter.getCanonicalName());
                     } else {
-                        currImports.add(parameter.getComponentType().getCanonicalName());
+                        imports.add(parameter.getComponentType().getCanonicalName());
                     }
                 }
             }
@@ -156,9 +154,9 @@ public class Implementation implements Impler {
             for (Class parameter : parameters) {
                 if (!parameter.isPrimitive()) {
                     if (!parameter.isArray()) {
-                        currImports.add(parameter.getCanonicalName());
+                        imports.add(parameter.getCanonicalName());
                     } else {
-                        currImports.add(parameter.getComponentType().getCanonicalName());
+                        imports.add(parameter.getComponentType().getCanonicalName());
                     }
                 }
             }
@@ -167,22 +165,11 @@ public class Implementation implements Impler {
             for (Class exception : exceptions) {
                 if (!exception.isPrimitive()) {
                     if (!exception.isArray()) {
-                        currImports.add(exception.getCanonicalName());
+                        imports.add(exception.getCanonicalName());
                     } else {
-                        currImports.add(exception.getComponentType().getCanonicalName());
+                        imports.add(exception.getComponentType().getCanonicalName());
                     }
                 }
-            }
-        }
-
-        Collections.sort(currImports);
-        for (String currImport : currImports) {
-            if (imports.size() > 0) {
-                if (!imports.get(imports.size() - 1).equals(currImport)) {
-                    imports.add(currImport);
-                }
-            } else {
-                imports.add(currImport);
             }
         }
     }
