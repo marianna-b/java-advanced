@@ -39,19 +39,19 @@ public class Implementation implements Impler {
 
     public void implement(Class<?> token, File root) throws ImplerException {
         if (token.isPrimitive() || token.isArray()) {
-            throw new ImplementException("Primitive types or arrays can't be implemented");
+            throw new ImplerException("Primitive types or arrays can't be implemented");
         }
         if (Modifier.isFinal(token.getModifiers())) {
-            throw new ImplementException("Final classes can't be implemented");
+            throw new ImplerException("Final classes can't be implemented");
         }
 
         if (Modifier.isStatic(token.getModifiers())) {
-            throw new ImplementException("Static classes can't be implemented");
+            throw new ImplerException("Static classes can't be implemented");
         }
 
         try {
             if (Modifier.isPrivate(token.getDeclaredConstructor(new Class[0]).getModifiers())) {
-                throw new ImplementException("Utility classes can't be implemented");
+                throw new ImplerException("Utility classes can't be implemented");
             }
         } catch (NoSuchMethodException ignored) {
         }
@@ -67,7 +67,7 @@ public class Implementation implements Impler {
                      new OutputStreamWriter(new FileOutputStream(getImplPath(root) + getName() + ".java"), "UTF-8")) {
             writer.write(toString());
         } catch (IOException e) {
-            throw new ImplementException(e);
+            throw new ImplerException(e);
         }
     }
 
