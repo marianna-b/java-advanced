@@ -54,7 +54,7 @@ public class Implementation implements Impler {
         initSuperClassMethods(c);
         initImports();
         try (OutputStreamWriter writer =
-                     new OutputStreamWriter(new FileOutputStream(getImplPath(root) + getName() + ".java"), "UTF-8")) {
+                     new OutputStreamWriter(new FileOutputStream(getImplPath(root) + name + ".java"), "UTF-8")) {
             writer.write(toString());
         } catch (IOException e) {
             throw new ImplerException(e.getLocalizedMessage());
@@ -182,10 +182,10 @@ public class Implementation implements Impler {
             file += ImplementationGenerator.toStringImport(anImport) + "\n\n";
         }
 
-        file += ImplementationGenerator.toStringClass(c, getName()) + " {\n\n";
+        file += ImplementationGenerator.toStringClass(c, name) + " {\n\n";
 
         for (Constructor constructor : constructors) {
-            file += ImplementationGenerator.toStringConstructor(constructor, getName()) + "\n\n";
+            file += ImplementationGenerator.toStringConstructor(constructor, name) + "\n\n";
         }
         for (Method method : methods) {
             file += ImplementationGenerator.toStringMethod(method) + "\n\n";
@@ -193,10 +193,6 @@ public class Implementation implements Impler {
 
         file += "}";
         return file;
-    }
-
-    private String getName() {
-        return name;
     }
 }
 
