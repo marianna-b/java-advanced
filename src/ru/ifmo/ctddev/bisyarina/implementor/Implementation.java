@@ -102,7 +102,7 @@ public class Implementation implements Impler {
             int modifiers = aM.getModifiers();
             if (!Modifier.isPrivate(modifiers)) {
                 if (!aM.isDefault() && !Modifier.isStatic(aM.getModifiers())) {
-                    addMethod(aM);
+                    methods.add(aM);
                 }
             }
         }
@@ -117,17 +117,13 @@ public class Implementation implements Impler {
         for (Method aM : m) {
             int modifiers = aM.getModifiers();
             if (Modifier.isAbstract(modifiers)) {
-                addMethod(aM);
+                methods.add(aM);
             } else {
                 if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
-                    removeMethod(aM);
+                    methods.remove(aM);
                 }
             }
         }
-    }
-
-    private void removeMethod(Method m) {
-        methods.remove(m);
     }
 
     private void initImports() {
@@ -176,10 +172,6 @@ public class Implementation implements Impler {
                 }
             }
         }
-    }
-
-    private void addMethod(Method m) {
-        methods.add(m);
     }
 
     public String toString() {
