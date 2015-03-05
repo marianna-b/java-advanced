@@ -36,7 +36,6 @@ public class Implementation implements Impler {
     });
 
     private Constructor[] constructors;
-    private final TreeSet<String> imports = new TreeSet<>();
 
     public void implement(Class<?> token, File root) throws ImplerException {
         if (Modifier.isFinal(token.getModifiers())) {
@@ -123,13 +122,6 @@ public class Implementation implements Impler {
                 }
             }
         }
-    }
-
-    private Class<?> getType(Class<?> cl) {
-        while (cl.isArray()) {
-            cl = cl.getComponentType();
-        }
-        return cl;
     }
 
     public String toString() {
