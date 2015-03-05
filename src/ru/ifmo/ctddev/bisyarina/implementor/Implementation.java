@@ -46,21 +46,13 @@ public class Implementation implements Impler {
             throw new ImplerException("Final classes can't be implemented");
         }
 
-        if (Modifier.isStatic(token.getModifiers())) {
-            throw new ImplerException("Static classes can't be implemented");
-        }
-
-        try {
-            if (Modifier.isPrivate(token.getDeclaredConstructor(new Class[0]).getModifiers())) {
-                throw new ImplerException("Utility classes can't be implemented");
-            }
-        } catch (NoSuchMethodException ignored) {
-        }
-
         c = token;
         this.name = c.getSimpleName() + "Impl";
 
         initConstructor();
+        if (!hasNonPrivateConstructor()) {
+            throw new ImplerException("Can't be implemented - doesn't have non private constructor");
+        }
         initInterfaceMethods();
         initSuperClassMethods(c);
         initImports();
@@ -70,6 +62,18 @@ public class Implementation implements Impler {
         } catch (IOException e) {
             throw new ImplerException(e);
         }
+    }
+
+    private boolean hasNonPrivateConstructor() {
+        if (constructors.length == 0) {
+            return true;
+        }
+        for (Constructor constructor : constructors) {
+            if (!Modifier.isPrivate(constructor.getModifiers())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void initConstructor() {
