@@ -24,7 +24,7 @@ public class Implementation implements Impler {
     private Class c;
     private String name;
 
-    private NavigableSet<Method> methods = new TreeSet<>(new Comparator<Method>() {
+    private final NavigableSet<Method> methods = new TreeSet<>(new Comparator<Method>() {
         @Override
         public int compare(Method m1, Method m2) {
             return toComparingString(m1).compareTo(toComparingString(m2));
@@ -36,7 +36,7 @@ public class Implementation implements Impler {
     });
 
     private Constructor[] constructors;
-    private TreeSet<String> imports = new TreeSet<>();
+    private final TreeSet<String> imports = new TreeSet<>();
 
     public void implement(Class<?> token, File root) throws ImplerException {
         if (token.isPrimitive() || token.isArray()) {
