@@ -8,15 +8,16 @@ import java.lang.reflect.Modifier;
  * Created by mariashka on 3/3/15.
  */
 public class ImplementationGenerator {
+    private static String sep = System.getProperty("line.separator");
 
     public static String toStringMethod(Method m) {
         String current = "";
         current += getAccessModString(m.getModifiers()) + m.getReturnType().getCanonicalName() + " " + m.getName();
         current += "(" + toStringParameters(m.getParameterTypes()) + ")";
 
-        current += "{" + "\n";
+        current += "{" + sep;
         current += "return " + getDefaultValueString(m.getReturnType()) + ";";
-        current += "\n" + "}";
+        current += sep + "}";
         return current;
     }
 
@@ -82,9 +83,9 @@ public class ImplementationGenerator {
             current += " throws " + toStringParameterList(exceptions);
         }
 
-        current += "{" + "\n";
+        current += "{" + sep;
         current += "super(" + getDefaultVarNameList(constructor.getParameterCount()) + ");\n";
-        current += "\n" + "}";
+        current += sep + "}";
         return current;
     }
 
