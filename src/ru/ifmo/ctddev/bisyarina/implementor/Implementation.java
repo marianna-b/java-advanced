@@ -39,9 +39,6 @@ public class Implementation implements Impler {
     private final TreeSet<String> imports = new TreeSet<>();
 
     public void implement(Class<?> token, File root) throws ImplerException {
-        if (token.isPrimitive() || token.isArray()) {
-            throw new ImplerException("Primitive types or arrays can't be implemented");
-        }
         if (Modifier.isFinal(token.getModifiers())) {
             throw new ImplerException("Final classes can't be implemented");
         }
