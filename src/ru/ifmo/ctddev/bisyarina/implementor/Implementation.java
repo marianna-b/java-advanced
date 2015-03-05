@@ -60,7 +60,7 @@ public class Implementation implements Impler {
                      new OutputStreamWriter(new FileOutputStream(getImplPath(root) + getName() + ".java"), "UTF-8")) {
             writer.write(toString());
         } catch (IOException e) {
-            throw new ImplerException(e);
+            throw new ImplerException(e.getLocalizedMessage());
         }
     }
 
