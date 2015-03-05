@@ -21,7 +21,7 @@ import java.util.TreeSet;
  * Created by mariashka on 3/1/15.
  */
 public class Implementation implements Impler {
-    private Class c;
+    private Class<?> c;
     private String name;
 
     private final NavigableSet<Method> methods = new TreeSet<>(new Comparator<Method>() {
@@ -52,7 +52,6 @@ public class Implementation implements Impler {
         }
         initInterfaceMethods();
         initSuperClassMethods(c);
-        initImports();
         try (OutputStreamWriter writer =
                      new OutputStreamWriter(new FileOutputStream(getImplPath(root) + name + ".java"), "UTF-8")) {
             writer.write(toString());
@@ -86,15 +85,15 @@ public class Implementation implements Impler {
     }
 
     private void initInterfaceMethods() {
-        Class[] interfaces = c.getInterfaces();
-        for (Class anInterface : interfaces) {
+        Class<?>[] interfaces = c.getInterfaces();
+        for (Class<?> anInterface : interfaces) {
             addInterfaceMethods(anInterface);
         }
     }
 
-    private void addInterfaceMethods(Class cl) {
-        Class[] interfaces = cl.getInterfaces();
-        for (Class anInterface : interfaces) {
+    private void addInterfaceMethods(Class<?> cl) {
+        Class<?>[] interfaces = cl.getInterfaces();
+        for (Class<?> anInterface : interfaces) {
             addInterfaceMethods(anInterface);
         }
         Method[] m = cl.getDeclaredMethods();
@@ -108,7 +107,7 @@ public class Implementation implements Impler {
         }
     }
 
-    private void initSuperClassMethods(Class c) {
+    private void initSuperClassMethods(Class<?> c) {
         if (c == null) {
             return;
         }
@@ -126,61 +125,17 @@ public class Implementation implements Impler {
         }
     }
 
-    private void initImports() {
-        imports.add(c.getPackage().getName() + ".*");
-        for (Method method : methods) {
-            Class[] parameters = method.getParameterTypes();
-            if (!method.getReturnType().isPrimitive()) {
-                if (!method.getReturnType().isArray()) {
-                    imports.add(method.getReturnType().getCanonicalName());
-                } else {
-                    imports.add(method.getReturnType().getComponentType().getCanonicalName());
-                }
-            }
-
-            for (Class parameter : parameters) {
-                if (!parameter.isPrimitive()) {
-                    if (!parameter.isArray()) {
-                        imports.add(parameter.getCanonicalName());
-                    } else {
-                        imports.add(parameter.getComponentType().getCanonicalName());
-                    }
-                }
-            }
+    private Class<?> getType(Class<?> cl) {
+        while (cl.isArray()) {
+            cl = cl.getComponentType();
         }
-
-        for (Constructor constructor : constructors) {
-            Class[] parameters = constructor.getParameterTypes();
-            for (Class parameter : parameters) {
-                if (!parameter.isPrimitive()) {
-                    if (!parameter.isArray()) {
-                        imports.add(parameter.getCanonicalName());
-                    } else {
-                        imports.add(parameter.getComponentType().getCanonicalName());
-                    }
-                }
-            }
-
-            Class[] exceptions = constructor.getExceptionTypes();
-            for (Class exception : exceptions) {
-                if (!exception.isPrimitive()) {
-                    if (!exception.isArray()) {
-                        imports.add(exception.getCanonicalName());
-                    } else {
-                        imports.add(exception.getComponentType().getCanonicalName());
-                    }
-                }
-            }
-        }
+        return cl;
     }
 
     public String toString() {
         String file = "";
 
         file += ImplementationGenerator.toStringPackage(c.getPackage());
-        for (String anImport : imports) {
-            file += ImplementationGenerator.toStringImport(anImport) + "\n\n";
-        }
 
         file += ImplementationGenerator.toStringClass(c, name) + " {\n\n";
 

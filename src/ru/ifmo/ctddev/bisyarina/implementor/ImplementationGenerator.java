@@ -11,7 +11,7 @@ public class ImplementationGenerator {
 
     public static String toStringMethod(Method m) {
         String current = "";
-        current += getAccessModString(m.getModifiers()) + m.getReturnType().getSimpleName() + " " + m.getName();
+        current += getAccessModString(m.getModifiers()) + m.getReturnType().getCanonicalName() + " " + m.getName();
         current += "(" + toStringParameters(m.getParameterTypes()) + ")";
 
         current += "{" + "\n";
@@ -33,13 +33,10 @@ public class ImplementationGenerator {
         return "";
     }
 
-    private static String getDefaultValueString(Class cl) {
+    private static String getDefaultValueString(Class<?> cl) {
         if (cl.isPrimitive()) {
             if (cl.equals(boolean.class)) {
                 return "false";
-            }
-            if (cl.equals(char.class)) {
-                return "'" + "\u0000" + "'";
             }
             if (cl.equals(void.class)) {
                 return "";
@@ -52,7 +49,7 @@ public class ImplementationGenerator {
     private static String toStringParameters(Class<?>[] parameterTypes) {
         String curr = "";
         for (int i = 0; i < parameterTypes.length; i++) {
-            curr += parameterTypes[i].getSimpleName() + " a" + Integer.toString(i);
+            curr += parameterTypes[i].getCanonicalName() + " a" + Integer.toString(i);
             if (i < parameterTypes.length - 1) {
                 curr += ", ";
             }
@@ -60,22 +57,18 @@ public class ImplementationGenerator {
         return curr;
     }
 
-    public static String toStringImport(String importStr) {
-        return "import " + importStr + ";";
-    }
-
     public static String toStringPackage(Package pack) {
         return "package " + pack.getName() + ";";
     }
 
-    public static String toStringClass(Class c, String name) {
+    public static String toStringClass(Class<?> c, String name) {
         String res = getAccessModString(c.getModifiers()) + " class " + name;
         if (c.isInterface()) {
             res += " implements ";
         } else {
             res += " extends ";
         }
-        res += c.getSimpleName();
+        res += c.getCanonicalName();
         return res;
     }
 
@@ -84,7 +77,7 @@ public class ImplementationGenerator {
         current += getAccessModString(constructor.getModifiers()) + name;
         current += "(" + toStringParameters(constructor.getParameterTypes()) + ")";
 
-        Class[] exceptions = constructor.getExceptionTypes();
+        Class<?>[] exceptions = constructor.getExceptionTypes();
         if (exceptions.length > 0) {
             current += " throws " + toStringParameterList(exceptions);
         }
@@ -106,10 +99,10 @@ public class ImplementationGenerator {
         return current;
     }
 
-    public static String toStringParameterList(Class[] parameterTypes) {
+    public static String toStringParameterList(Class<?>[] parameterTypes) {
         String curr = "";
         for (int i = 0; i < parameterTypes.length; i++) {
-            curr += parameterTypes[i].getSimpleName();
+            curr += parameterTypes[i].getCanonicalName();
             if (i < parameterTypes.length - 1) {
                 curr += ", ";
             }
