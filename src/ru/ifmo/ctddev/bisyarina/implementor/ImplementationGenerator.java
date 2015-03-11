@@ -40,7 +40,6 @@ public class ImplementationGenerator {
      *
      * @param modifiers int value
      * @return String representation of access modifier
-     * @see {@link java.lang.reflect.Modifier}
      */
     private static String getAccessModString(int modifiers) {
         if (Modifier.isProtected(modifiers)) {
