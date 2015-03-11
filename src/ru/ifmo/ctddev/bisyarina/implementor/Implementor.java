@@ -5,7 +5,7 @@ import info.kgeorgiy.java.advanced.implementor.ImplerException;
 import java.io.File;
 
 /**
- * The {@link ru.ifmo.ctddev.bisyarina.implementor.Implementor} class provides
+ * The {@link ru.ifmo.ctddev.bisyarina.implementor.Implementor Implementor} class provides
  * command line interface fot implementing Java classes ans interfaces.
  */
 

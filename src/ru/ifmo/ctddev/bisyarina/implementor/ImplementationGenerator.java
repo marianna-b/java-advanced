@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 /**
- * The {@link ru.ifmo.ctddev.bisyarina.implementor.ImplementationGenerator} class
+ * The {@link ru.ifmo.ctddev.bisyarina.implementor.ImplementationGenerator ImplementationGenerator} class
  * provides interface to generate {@link java.lang.String} representation of
  * default implementation of class members
  */
@@ -16,7 +16,7 @@ public class ImplementationGenerator {
     public static String lineSeparator = System.getProperty("line.separator");
 
     /**
-     * Returns {@link java.lang.String} representation of {@link Method} m
+     * Returns {@link java.lang.String} representation of {@link java.lang.reflect.Method} m
      * default implementation
      *
      * @param m - method to represent
@@ -75,7 +75,7 @@ public class ImplementationGenerator {
     /**
      * Returns {@link java.lang.String} representation of parameter list with default value names
      * separated with commas.
-     * @param parameterTypes array of {@link Class} representing types of parameters
+     * @param parameterTypes array of {@link java.lang.Class} representing types of parameters
      * @return {@link java.lang.String} of given parameter list and default value names
      */
     private static String toStringParameters(Class<?>[] parameterTypes) {
@@ -122,7 +122,7 @@ public class ImplementationGenerator {
      * Returns {@link java.lang.String} representing of constructor only invoking given
      * constructor of superclass
      *
-     * @param name        {@link java.lang.String} name of class to generate {@link java.lang.reflect.Constructor}
+     * @param name {@link java.lang.String} name of class to generate {@link java.lang.reflect.Constructor}
      * @param constructor {@link java.lang.reflect.Constructor} of superclass to use
      * @return {@link java.lang.String} representation of constructor
      */
@@ -170,7 +170,7 @@ public class ImplementationGenerator {
 
     /**
      * Returns {@link java.lang.String} representation of parameter list separated with commas.
-     * @param parameterTypes array of {@link Class} representing types of parameters
+     * @param parameterTypes array of {@link java.lang.Class} representing types of parameters
      * @return {@link java.lang.String} of given parameter list
      */
     public static String toStringParameterList(Class<?>[] parameterTypes) {
