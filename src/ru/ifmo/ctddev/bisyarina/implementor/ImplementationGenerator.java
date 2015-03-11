@@ -4,20 +4,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-/**
- * Created by mariashka on 3/3/15.
- */
 public class ImplementationGenerator {
-    public static String sep = System.getProperty("line.separator");
+    public static String lineSeparator = System.getProperty("line.separator");
 
     public static String toStringMethod(Method m) {
         String current = "";
         current += getAccessModString(m.getModifiers()) + m.getReturnType().getCanonicalName() + " " + m.getName();
         current += "(" + toStringParameters(m.getParameterTypes()) + ")";
 
-        current += "{" + sep;
+        current += "{" + lineSeparator;
         current += "return " + getDefaultValueString(m.getReturnType()) + ";";
-        current += sep + "}";
+        current += lineSeparator + "}";
         return current;
     }
 
@@ -48,14 +45,16 @@ public class ImplementationGenerator {
     }
 
     private static String toStringParameters(Class<?>[] parameterTypes) {
-        String curr = "";
+        StringBuilder builder = new StringBuilder();
         for (int i = 0; i < parameterTypes.length; i++) {
-            curr += parameterTypes[i].getCanonicalName() + " a" + Integer.toString(i);
+            builder.append(parameterTypes[i].getCanonicalName());
+            builder.append(" a");
+            builder.append(i);
             if (i < parameterTypes.length - 1) {
-                curr += ", ";
+                builder.append(", ");
             }
         }
-        return curr;
+        return builder.toString();
     }
 
     public static String toStringPackage(Package pack) {
@@ -74,40 +73,50 @@ public class ImplementationGenerator {
     }
 
     public static String toStringConstructor(Constructor constructor, String name) {
-        String current = "";
-        current += getAccessModString(constructor.getModifiers()) + name;
-        current += "(" + toStringParameters(constructor.getParameterTypes()) + ")";
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(getAccessModString(constructor.getModifiers()));
+        builder.append(name);
+        builder.append("(");
+        builder.append(toStringParameters(constructor.getParameterTypes()));
+        builder.append(")");
 
         Class<?>[] exceptions = constructor.getExceptionTypes();
         if (exceptions.length > 0) {
-            current += " throws " + toStringParameterList(exceptions);
+            builder.append(" throws ");
+            builder.append(toStringParameterList(exceptions));
         }
 
-        current += "{" + sep;
-        current += "super(" + getDefaultVarNameList(constructor.getParameterCount()) + ");\n";
-        current += sep + "}";
-        return current;
+        builder.append("{");
+        builder.append(lineSeparator);
+        builder.append("super(");
+        builder.append(getDefaultVarNameList(constructor.getParameterCount()));
+        builder.append(");");
+        builder.append(lineSeparator);
+        builder.append("}");
+        return builder.toString();
     }
 
     private static String getDefaultVarNameList(int l) {
-        String current = "";
+        StringBuilder builder = new StringBuilder();
         for (int i = 0; i < l; i++) {
-            current += "a" + Integer.toString(i);
+            builder.append("a");
+            builder.append(i);
             if (i < l - 1) {
-                current += ", ";
+                builder.append(", ");
             }
         }
-        return current;
+        return builder.toString();
     }
 
     public static String toStringParameterList(Class<?>[] parameterTypes) {
-        String curr = "";
+        StringBuilder builder = new StringBuilder();
         for (int i = 0; i < parameterTypes.length; i++) {
-            curr += parameterTypes[i].getCanonicalName();
+            builder.append(parameterTypes[i].getCanonicalName());
             if (i < parameterTypes.length - 1) {
-                curr += ", ";
+                builder.append(", ");
             }
         }
-        return curr;
+        return builder.toString();
     }
 }

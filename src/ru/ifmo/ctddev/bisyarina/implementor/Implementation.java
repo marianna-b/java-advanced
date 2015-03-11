@@ -19,13 +19,10 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-/**
- * Created by mariashka on 3/1/15.
- */
 public class Implementation implements Impler, JarImpler {
     private Class<?> c;
     private String name;
-    private String fileName;
+    private String filePath;
 
     private final NavigableSet<Method> methods = new TreeSet<>(new Comparator<Method>() {
         @Override
@@ -45,15 +42,15 @@ public class Implementation implements Impler, JarImpler {
         implement(aClass, file);
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        if (compiler.run(null, null, null, fileName + ".java") < 0) {
+        if (compiler.run(null, null, null, filePath + ".java") < 0) {
             throw new ImplerException("Implementation failed");
         }
 
-        try (FileOutputStream stream = new FileOutputStream(fileName + ".jar");
+        try (FileOutputStream stream = new FileOutputStream(filePath + ".jar");
              JarOutputStream out = new JarOutputStream(stream, new Manifest());
-             FileInputStream in = new FileInputStream(fileName + ".class")) {
+             FileInputStream in = new FileInputStream(filePath + ".class")) {
 
-            JarEntry jarAdd = new JarEntry(fileName + ".class");
+            JarEntry jarAdd = new JarEntry(filePath + ".class");
             out.putNextEntry(jarAdd);
 
             byte[] buffer = new byte[1024];
@@ -82,12 +79,12 @@ public class Implementation implements Impler, JarImpler {
         initSuperClassMethods(c);
 
         try {
-            fileName = getImplPath(root) + name;
+            filePath = getImplPath(root) + name;
         } catch (IOException e) {
             throw new ImplerException(e.getLocalizedMessage());
         }
         try (OutputStreamWriter writer =
-                     new OutputStreamWriter(new FileOutputStream(fileName + ".java"), "UTF-8")) {
+                     new OutputStreamWriter(new FileOutputStream(filePath + ".java"), "UTF-8")) {
             writer.write(toString());
         } catch (IOException e) {
             throw new ImplerException(e.getLocalizedMessage());
@@ -159,13 +156,13 @@ public class Implementation implements Impler, JarImpler {
 
         file += ImplementationGenerator.toStringPackage(c.getPackage());
 
-        file += ImplementationGenerator.toStringClass(c, name) + " {" + ImplementationGenerator.sep;
+        file += ImplementationGenerator.toStringClass(c, name) + " {" + ImplementationGenerator.lineSeparator;
 
         for (Constructor constructor : constructors) {
-            file += ImplementationGenerator.toStringConstructor(constructor, name) + ImplementationGenerator.sep;
+            file += ImplementationGenerator.toStringConstructor(constructor, name) + ImplementationGenerator.lineSeparator;
         }
         for (Method method : methods) {
-            file += ImplementationGenerator.toStringMethod(method) + ImplementationGenerator.sep;
+            file += ImplementationGenerator.toStringMethod(method) + ImplementationGenerator.lineSeparator;
         }
 
         file += "}";
