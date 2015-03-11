@@ -8,7 +8,7 @@ import java.lang.reflect.Modifier;
  * Created by mariashka on 3/3/15.
  */
 public class ImplementationGenerator {
-    private static String sep = System.getProperty("line.separator");
+    public static String sep = System.getProperty("line.separator");
 
     public static String toStringMethod(Method m) {
         String current = "";

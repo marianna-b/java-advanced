@@ -16,7 +16,7 @@ public class Implementor {
         try {
             Class<?> cl = Class.forName(args[0]);
             Implementation impl = new Implementation();
-            impl.implement(cl, new File("."));
+            impl.implementJar(cl, new File("."));
         } catch (ClassNotFoundException e) {
             System.err.println("Invalid class");
         } catch (ImplerException e) {
