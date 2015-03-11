@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 /**
- * The {@link ru.ifmo.ctddev.bisyarina.implementor.ImplementationGenerator ImplementationGenerator} class
+ * The {@link ImplementationGenerator} class
  * provides interface to generate {@link java.lang.String} representation of
  * default implementation of class members
  */

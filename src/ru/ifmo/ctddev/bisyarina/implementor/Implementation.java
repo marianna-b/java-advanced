@@ -19,21 +19,21 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 /**
- * The {@link ru.ifmo.ctddev.bisyarina.implementor.Implementation Implementation} class provides interface
+ * The {@link Implementation} class provides interface
  * to get implementation of class and interfaces
  */
 
 public class Implementation implements JarImpler {
     /**
-     * {@link java.lang.Class Class} to implement
+     * {@link java.lang.Class} to implement
      */
     private Class<?> c;
     /**
-     * {@link java.lang.String String} name of implementation
+     * {@link java.lang.String} name of implementation
      */
     private String name;
     /**
-     * {@link java.lang.String String} of path to group of files of implementation
+     * {@link java.lang.String} of path to group of files of implementation
      */
     private String filePath;
 
@@ -147,7 +147,7 @@ public class Implementation implements JarImpler {
     }
 
     /**
-     * Initialises {@link ru.ifmo.ctddev.bisyarina.implementor.Implementation#constructors constructors}
+     * Initialises {@link #constructors}
      * with superclass constructors.
      */
     private void initConstructor() {
@@ -159,7 +159,7 @@ public class Implementation implements JarImpler {
      * Return template for files needed for implementation
      * (e.g. *.java, *.class, *.jar)
      * @param root directory where files must be placed
-     * @return {@link java.lang.String String} representing path of this group of files
+     * @return {@link java.lang.String} representing path of this group of files
      * @throws IOException if creating directories failed
      */
     private String getImplPath(File root) throws IOException {
@@ -172,9 +172,9 @@ public class Implementation implements JarImpler {
     }
 
     /**
-     *  Initialises {@link ru.ifmo.ctddev.bisyarina.implementor.Implementation#methods methods} with
+     *  Initialises {@link #methods} with
      *  all non-static, non-private and non-default methods of given class and all its interfaces
-     * @param cl {@link java.lang.Class Class} to initialise methods with
+     * @param cl {@link java.lang.Class} to initialise methods with
      */
     private void addInterfaceMethods(Class<?> cl) {
         Class<?>[] interfaces = cl.getInterfaces();
@@ -193,11 +193,11 @@ public class Implementation implements JarImpler {
     }
 
     /**
-     * Initialises {@link ru.ifmo.ctddev.bisyarina.implementor.Implementation#methods methods} with
+     * Initialises {@link #methods} with
      * all non-static and non-private methods of given class and all its superclasses.
      * Removes methods that are implemented.
      *
-     * @param cl {@link java.lang.Class Class} to initialise methods with
+     * @param cl {@link java.lang.Class} to initialise methods with
      */
     private void initSuperClassMethods(Class<?> cl) {
         if (cl == null) {
@@ -218,8 +218,8 @@ public class Implementation implements JarImpler {
     }
 
     /**
-     * Returns {@link java.lang.String String} representation of default implementation
-     * @return {@link java.lang.String String} of implementation
+     * Returns {@link java.lang.String} representation of default implementation
+     * @return {@link java.lang.String} of implementation
      */
     public String toString() {
         String file = "";
