@@ -16,7 +16,7 @@ public class ImplementationGenerator {
     /**
      * {@link java.lang.String} value representing the line separator
      */
-    public static String lineSeparator = System.getProperty("line.separator");
+    public static final String lineSeparator = System.getProperty("line.separator");
 
     /**
      * Returns {@link java.lang.String} representation of {@link java.lang.reflect.Method} m
