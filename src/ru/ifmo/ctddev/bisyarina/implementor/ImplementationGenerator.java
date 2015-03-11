@@ -10,6 +10,9 @@ import java.lang.reflect.Modifier;
  * default implementation of class members
  */
 public class ImplementationGenerator {
+    private ImplementationGenerator() {
+    }
+
     /**
      * {@link java.lang.String} value representing the line separator
      */

@@ -10,6 +10,9 @@ import java.io.File;
  */
 
 public class Implementor {
+    private Implementor() {
+    }
+
     /**
      * Generates jar-file containing implementation of a given class.
      * Prints a message in case of an error.
