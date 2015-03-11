@@ -2,11 +2,11 @@ package ru.ifmo.ctddev.bisyarina.implementor;
 
 import info.kgeorgiy.java.advanced.implementor.Impler;
 import info.kgeorgiy.java.advanced.implementor.ImplerException;
+import info.kgeorgiy.java.advanced.implementor.JarImpler;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -15,14 +15,17 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.NavigableSet;
 import java.util.TreeSet;
-
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 /**
  * Created by mariashka on 3/1/15.
  */
-public class Implementation implements Impler {
+public class Implementation implements Impler, JarImpler {
     private Class<?> c;
     private String name;
+    private String fileName;
 
     private final NavigableSet<Method> methods = new TreeSet<>(new Comparator<Method>() {
         @Override
@@ -37,6 +40,32 @@ public class Implementation implements Impler {
 
     private Constructor[] constructors;
 
+    @Override
+    public void implementJar(Class<?> aClass, File file) throws ImplerException {
+        implement(aClass, file);
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        if (compiler.run(null, null, null, fileName + ".java") < 0) {
+            throw new ImplerException("Implementation failed");
+        }
+
+        try (FileOutputStream stream = new FileOutputStream(fileName + ".jar");
+             JarOutputStream out = new JarOutputStream(stream, new Manifest());
+             FileInputStream in = new FileInputStream(fileName + ".class")) {
+
+            JarEntry jarAdd = new JarEntry(fileName + ".class");
+            out.putNextEntry(jarAdd);
+
+            byte[] buffer = new byte[1024];
+            int r;
+            while ((r = in.read(buffer, 0, buffer.length)) > 0) {
+                out.write(buffer, 0, r);
+            }
+        } catch (IOException e) {
+            throw new ImplerException(e.getLocalizedMessage());
+        }
+    }
+
     public void implement(Class<?> token, File root) throws ImplerException {
         if (Modifier.isFinal(token.getModifiers())) {
             throw new ImplerException("Final classes can't be implemented");
@@ -49,14 +78,21 @@ public class Implementation implements Impler {
         if (!hasNonPrivateConstructor()) {
             throw new ImplerException("Can't be implemented - doesn't have non private constructor");
         }
-        initInterfaceMethods();
+        addInterfaceMethods(c);
         initSuperClassMethods(c);
+
+        try {
+            fileName = getImplPath(root) + name;
+        } catch (IOException e) {
+            throw new ImplerException(e.getLocalizedMessage());
+        }
         try (OutputStreamWriter writer =
-                     new OutputStreamWriter(new FileOutputStream(getImplPath(root) + name + ".java"), "UTF-8")) {
+                     new OutputStreamWriter(new FileOutputStream(fileName + ".java"), "UTF-8")) {
             writer.write(toString());
         } catch (IOException e) {
             throw new ImplerException(e.getLocalizedMessage());
         }
+
     }
 
     private boolean hasNonPrivateConstructor() {
@@ -76,18 +112,12 @@ public class Implementation implements Impler {
     }
 
     private String getImplPath(File root) throws IOException {
-        String pack = c.getPackage().getName().replace(".", "/");
-        String path = root.getPath().concat("/" + pack + "/");
+        String fileSeparator = File.separator;
+        String pack = c.getPackage().getName().replace(".", fileSeparator);
+        String path = root.getPath().concat(fileSeparator + pack + fileSeparator);
 
         Files.createDirectories(Paths.get(path));
         return path;
-    }
-
-    private void initInterfaceMethods() {
-        Class<?>[] interfaces = c.getInterfaces();
-        for (Class<?> anInterface : interfaces) {
-            addInterfaceMethods(anInterface);
-        }
     }
 
     private void addInterfaceMethods(Class<?> cl) {
@@ -129,18 +159,19 @@ public class Implementation implements Impler {
 
         file += ImplementationGenerator.toStringPackage(c.getPackage());
 
-        file += ImplementationGenerator.toStringClass(c, name) + " {\n\n";
+        file += ImplementationGenerator.toStringClass(c, name) + " {" + ImplementationGenerator.sep;
 
         for (Constructor constructor : constructors) {
-            file += ImplementationGenerator.toStringConstructor(constructor, name) + "\n\n";
+            file += ImplementationGenerator.toStringConstructor(constructor, name) + ImplementationGenerator.sep;
         }
         for (Method method : methods) {
-            file += ImplementationGenerator.toStringMethod(method) + "\n\n";
+            file += ImplementationGenerator.toStringMethod(method) + ImplementationGenerator.sep;
         }
 
         file += "}";
         return file;
     }
+
 }
 
 
