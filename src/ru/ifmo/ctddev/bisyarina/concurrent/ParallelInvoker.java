@@ -8,7 +8,7 @@ public class ParallelInvoker <T> {
     T[] results;
     boolean[] taken;
     int size;
-    ParallelInvoker(Class<T> cl, int maxAmount) {
+    ParallelInvoker(Class<?> cl, int maxAmount) {
         threads = new Thread[maxAmount];
         results = (T[]) Array.newInstance(cl, maxAmount);
         size = 0;
