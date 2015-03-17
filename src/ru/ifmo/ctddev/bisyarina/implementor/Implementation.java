@@ -6,6 +6,9 @@ import info.kgeorgiy.java.advanced.implementor.JarImpler;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.String;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -67,18 +70,23 @@ public class Implementation implements JarImpler {
      */
     @Override
     public void implementJar(Class<?> token, File jarFile) throws ImplerException {
-        implement(token, jarFile);
+        File dir = new File("./temp");
+        implement(token, dir);
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler.run(null, null, null, filePath + ".java") < 0) {
             throw new ImplerException("Implementation failed");
         }
 
-        try (FileOutputStream stream = new FileOutputStream(filePath + ".jar");
+        try (FileOutputStream stream = new FileOutputStream(jarFile);
              JarOutputStream out = new JarOutputStream(stream, new Manifest());
              FileInputStream in = new FileInputStream(filePath + ".class")) {
 
-            JarEntry jarAdd = new JarEntry(filePath + ".class");
+            String fileSeparator = File.separator;
+            String jarName = c.getPackage().getName().replace(".", fileSeparator);
+            jarName += fileSeparator;
+            jarName += name + ".class";
+            JarEntry jarAdd = new JarEntry(jarName);
             out.putNextEntry(jarAdd);
 
             byte[] buffer = new byte[1024];
@@ -89,6 +97,7 @@ public class Implementation implements JarImpler {
         } catch (IOException e) {
             throw new ImplerException(e.getLocalizedMessage());
         }
+
     }
 
     /**
