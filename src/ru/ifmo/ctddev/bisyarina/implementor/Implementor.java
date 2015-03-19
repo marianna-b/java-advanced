@@ -7,15 +7,12 @@ import java.lang.System;
 
 /**
  * The {@link Implementor} class provides
- * command line interface fot implementing Java classes ans interfaces.
+ * command line interface for generating jar-file with implementation of Java classes ans interfaces.
  */
 
 public class Implementor {
-    private Implementor() {
-    }
-
     /**
-     * Generates jar-file containing implementation of a given class to given jar file.
+     * Generates given jar-file containing implementation of a given class.
      * Prints a message in case of an error.
      *
      * @param args String array containing "-jar" option, name of the class to implement,

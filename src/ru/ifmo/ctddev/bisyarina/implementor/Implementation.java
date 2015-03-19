@@ -23,7 +23,7 @@ import java.util.jar.Manifest;
 
 /**
  * The {@link Implementation} class provides interface
- * to get implementation of class and interfaces
+ * to get implementation of class and interfaces, generating *.java or *.jar files
  */
 
 public class Implementation implements JarImpler {
@@ -82,10 +82,7 @@ public class Implementation implements JarImpler {
              JarOutputStream out = new JarOutputStream(stream, new Manifest());
              FileInputStream in = new FileInputStream(filePath + ".class")) {
 
-            String fileSeparator = File.separator;
-            String jarName = c.getPackage().getName().replace(".", fileSeparator);
-            jarName += fileSeparator;
-            jarName += name + ".class";
+            String jarName = c.getPackage().getName().replace(".", "/") + "/" + name + ".class";
             JarEntry jarAdd = new JarEntry(jarName);
             out.putNextEntry(jarAdd);
 
