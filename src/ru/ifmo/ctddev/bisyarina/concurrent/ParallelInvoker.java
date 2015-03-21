@@ -1,39 +1,36 @@
 package ru.ifmo.ctddev.bisyarina.concurrent;
 
 import java.lang.reflect.Array;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ParallelInvoker <T> {
     Thread[] threads;
     T[] results;
-    boolean[] taken;
     int size;
-    ParallelInvoker(Class<?> cl, int maxAmount) {
+    @SafeVarargs
+    ParallelInvoker(int maxAmount, T ... args) {
         threads = new Thread[maxAmount];
-        results = (T[]) Array.newInstance(cl, maxAmount);
+        results = (T[]) Array.newInstance(args.getClass().getComponentType(), maxAmount);
         size = 0;
     }
 
-    void add(Supplier<T> supplier) {
-        taken[size] = false;
+    void add(Supplier<? extends T> supplier) {
+        int curr_size = size;
         threads[size] = new Thread(new Runnable() {
             @Override
             public void run() {
-                results[size] = supplier.get();
+                results[curr_size] = supplier.get();
             }
         });
         threads[size].start();
         size++;
     }
 
-    T get() {
-        while (true) {
-            for (int i = 0; i < size; i++) {
-                if (!threads[i].isAlive() && !taken[i]) {
-                    taken[i] = true;
-                    return results[i];
-                }
-            }
+    T getAll(Function<T[], T> f) throws InterruptedException {
+        for (int i = 0; i < size; i++) {
+            threads[i].join();
         }
+        return f.apply(results);
     }
 }
