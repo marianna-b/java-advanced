@@ -6,8 +6,6 @@ import info.kgeorgiy.java.advanced.implementor.JarImpler;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.*;
-import java.io.File;
-import java.io.IOException;
 import java.lang.String;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
