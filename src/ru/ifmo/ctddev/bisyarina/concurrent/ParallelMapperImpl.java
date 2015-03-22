@@ -3,11 +3,8 @@ package ru.ifmo.ctddev.bisyarina.concurrent;
 import java.util.*;
 import java.util.function.Function;
 
-/**
- * Created by mariashka on 3/22/15.
- */
 public class ParallelMapperImpl implements ParallelMapper {
-    private Thread[] threads;
+    private final Thread[] threads;
     private final Queue<Runnable> queue = new LinkedList<>();
 
     ParallelMapperImpl(int threadAmount) {
@@ -48,6 +45,7 @@ public class ParallelMapperImpl implements ParallelMapper {
             });
         }
 
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (counter) {
             while (counter[0] < args.size()) {
                 counter.wait();
@@ -65,7 +63,7 @@ public class ParallelMapperImpl implements ParallelMapper {
         }
     }
 
-    private void set(Runnable r) throws InterruptedException {
+    private void set(Runnable r) {
         synchronized (queue) {
             queue.add(r);
             queue.notify();

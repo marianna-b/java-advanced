@@ -9,7 +9,7 @@ import java.util.function.Supplier;
  * Provides functionality to process list and get result of specified type
  */
 public class ParallelInvoker {
-    private ParallelMapper mapper;
+    private final ParallelMapper mapper;
 
     public ParallelInvoker(ParallelMapper mapper) {
         this.mapper = mapper;

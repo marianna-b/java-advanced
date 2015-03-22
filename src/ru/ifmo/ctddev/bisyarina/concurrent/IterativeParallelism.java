@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 
 public class IterativeParallelism implements ListIP {
-    private ParallelInvoker parallelInvoker;
+    private final ParallelInvoker parallelInvoker;
 
     IterativeParallelism(ParallelMapper mapper) {
         parallelInvoker = new ParallelInvoker(mapper);
@@ -26,9 +26,8 @@ public class IterativeParallelism implements ListIP {
      * Returns value computed by given monoid from results of parallel computing
      * @param monoid monoid to compute result
      * @return value computed by given monoid
-     * @throws InterruptedException if any thread computing result has interrupted the current thread.
      */
-    private <T> T unionResults(Monoid<T> monoid, List<T> results) throws InterruptedException {
+    private <T> T unionResults(Monoid<T> monoid, List<T> results) {
         results.forEach(monoid::process);
         return monoid.get();
     }

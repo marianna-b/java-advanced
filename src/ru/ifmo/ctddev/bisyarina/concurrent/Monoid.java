@@ -9,7 +9,7 @@ import java.util.function.BiFunction;
  */
 
 public class Monoid<T> {
-    private BiFunction<T, T, T> f;
+    private final BiFunction<T, T, T> f;
     private boolean identity;
     private T result;
 
