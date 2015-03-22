@@ -1,6 +1,5 @@
 package ru.ifmo.ctddev.bisyarina.concurrent;
 
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import static java.lang.reflect.Array.newInstance;
@@ -18,17 +17,16 @@ public class ParallelInvoker <T> {
 
     void add(Supplier<? extends T> supplier) {
         int curr_size = size;
-        threads[size] = new Thread(() -> {
-            results[curr_size] = supplier.get();
-        });
+        threads[size] = new Thread(() -> results[curr_size] = supplier.get());
         threads[size].start();
         size++;
     }
 
-    T getAll(BiFunction<T[], Integer, T> f) throws InterruptedException {
+    T getAll(Monoid<T> monoid) throws InterruptedException {
         for (int i = 0; i < size; i++) {
             threads[i].join();
+            monoid.process(results[i]);
         }
-        return f.apply(results, size);
+        return monoid.get();
     }
 }
