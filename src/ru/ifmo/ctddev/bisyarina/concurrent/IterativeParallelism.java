@@ -18,15 +18,14 @@ import java.util.stream.Collectors;
 public class IterativeParallelism implements ListIP {
     private final ParallelInvoker parallelInvoker;
 
+    /**
+     * Constructs IterativeParallelism instance using given mapper
+     * @param mapper mapper for parallel invoking
+     */
     IterativeParallelism(ParallelMapper mapper) {
         parallelInvoker = new ParallelInvoker(mapper);
     }
 
-    /**
-     * Returns value computed by given monoid from results of parallel computing
-     * @param monoid monoid to compute result
-     * @return value computed by given monoid
-     */
     private <T> T unionResults(Monoid<T> monoid, List<T> results) {
         results.forEach(monoid::process);
         return monoid.get();

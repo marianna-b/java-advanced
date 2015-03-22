@@ -2,11 +2,18 @@ package ru.ifmo.ctddev.bisyarina.concurrent;
 
 import java.util.*;
 import java.util.function.Function;
-
+/**
+ * {@link ru.ifmo.ctddev.bisyarina.concurrent.ParallelMapperImpl} provides functionality to process task
+ * using multiple threads
+ */
 public class ParallelMapperImpl implements ParallelMapper {
     private final Thread[] threads;
     private final Queue<Runnable> queue = new LinkedList<>();
 
+    /**
+     * Constructs mapper using given amount of threads to process tasks
+     * @param threadAmount amount of threads
+     */
     ParallelMapperImpl(int threadAmount) {
         this.threads = new Thread[threadAmount];
         for (int i = 0; i < threadAmount; i++) {

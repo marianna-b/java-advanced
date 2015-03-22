@@ -11,10 +11,25 @@ import java.util.function.Supplier;
 public class ParallelInvoker {
     private final ParallelMapper mapper;
 
+    /**
+     * Constructs instance invoking parallel computations with given mapper
+     * @param mapper mapper to invoke with
+     */
     public ParallelInvoker(ParallelMapper mapper) {
         this.mapper = mapper;
     }
 
+    /**
+     * Return a list of results of applying given function to given list of arguments
+     * splitting it to parts
+     * @param maxAmount amount of parts to produce
+     * @param list list to process
+     * @param f function to apply
+     * @param <T> supertype of return values
+     * @param <K> supertype of input values
+     * @return a list of results of applying given function partly
+     * @throws InterruptedException if any thread computing result has interrupted the current thread.
+     */
     public <T, K> List<T> splitProcess
         (int maxAmount, List<? extends K> list, Function<List<? extends K>, Supplier<T>> f)
             throws InterruptedException {
