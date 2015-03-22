@@ -11,11 +11,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * {@link ru.ifmo.ctddev.bisyarina.concurrent.ParallelList} provides functionality for
+ * {@link IterativeParallelism} provides functionality for
  * list parallel computations
  */
 
-public class ParallelList implements ListIP {
+public class IterativeParallelism implements ListIP {
     /**
      * Returns maximum element of list. If it is not unique - the first
      * @param i amount of threads to use

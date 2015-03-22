@@ -17,35 +17,35 @@ public class MainParallel {
         list.add(10);
         list.add(-1);
         list.add(11);
-        ParallelList parallelList = new ParallelList();
+        IterativeParallelism iterativeParallelism = new IterativeParallelism();
         try {
-            System.err.println(parallelList.minimum(3, list, Comparator.<Integer>naturalOrder()));
-            System.err.println(parallelList.maximum(3, list, Comparator.<Integer>naturalOrder()));
-            System.err.println(parallelList.any(3, list, new Predicate<Integer>() {
+            System.err.println(iterativeParallelism.minimum(3, list, Comparator.<Integer>naturalOrder()));
+            System.err.println(iterativeParallelism.maximum(3, list, Comparator.<Integer>naturalOrder()));
+            System.err.println(iterativeParallelism.any(3, list, new Predicate<Integer>() {
                 @Override
                 public boolean test(Integer integer) {
                     return integer > 0;
                 }
             }));
-            System.err.println(parallelList.all(3, list, new Predicate<Integer>() {
+            System.err.println(iterativeParallelism.all(3, list, new Predicate<Integer>() {
                 @Override
                 public boolean test(Integer integer) {
                     return integer > 0;
                 }
             }));
-            System.err.println(parallelList.any(3, list, new Predicate<Integer>() {
+            System.err.println(iterativeParallelism.any(3, list, new Predicate<Integer>() {
                 @Override
                 public boolean test(Integer integer) {
                     return integer == 0;
                 }
             }));
-            System.err.println(parallelList.filter(3, list, new Predicate<Integer>() {
+            System.err.println(iterativeParallelism.filter(3, list, new Predicate<Integer>() {
                 @Override
                 public boolean test(Integer integer) {
                     return integer > 0;
                 }
             }));
-            System.err.println(parallelList.concat(3, list));
+            System.err.println(iterativeParallelism.concat(3, list));
         } catch (InterruptedException e) {
             System.err.println(e.getMessage());
         }
