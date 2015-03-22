@@ -5,7 +5,7 @@ import java.util.function.BiFunction;
 /**
  * {@link ru.ifmo.ctddev.bisyarina.concurrent.Monoid} provides functionality
  * for algebraic structure with a single associative binary operation and an identity element
- * @param <T>
+ * @param <T> type of element
  */
 
 public class Monoid<T> {

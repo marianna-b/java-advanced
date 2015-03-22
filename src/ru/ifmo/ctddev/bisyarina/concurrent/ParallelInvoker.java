@@ -21,6 +21,7 @@ public class ParallelInvoker <T> {
      * @param maxAmount maximal amount of threads to use
      * @param list list to process
      * @param f function invoked to get answers for sublists
+     * @param args passing return type
      * @param <K> type of list elements
      */
     @SafeVarargs
