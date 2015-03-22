@@ -36,20 +36,18 @@ public class ParallelList implements ListIP {
             });
         }
 
-        return parallelInvoker.getAll(ts -> {
+        return parallelInvoker.getAll((values,size) -> {
             int idx = 0;
-            for (int j = 0; j < ts.length; j++) {
-                if (ts[idx] == null) {
+            for (int j = 0; j < size; j++) {
+                if (values[idx] == null) {
                     idx = j;
                 } else {
-                    if (ts[j] != null) {
-                        if (comparator.compare(ts[j], ts[idx]) > 0) {
-                            idx = j;
-                        }
+                    if (comparator.compare(values[j], values[idx]) > 0) {
+                        idx = j;
                     }
                 }
             }
-            return ts[idx];
+            return values[idx];
         });
     }
 
@@ -80,20 +78,18 @@ public class ParallelList implements ListIP {
             });
         }
 
-        return parallelInvoker.getAll(ts -> {
+        return parallelInvoker.getAll((values, size) -> {
             int idx = 0;
-            for (int j = 0; j < ts.length; j++) {
-                if (ts[idx] == null) {
+            for (int j = 0; j < size; j++) {
+                if (values[idx] == null) {
                     idx = j;
                 } else {
-                    if (ts[j] != null) {
-                        if (comparator.compare(ts[j], ts[idx]) < 0) {
-                            idx = j;
-                        }
+                    if (comparator.compare(values[j], values[idx]) < 0) {
+                        idx = j;
                     }
                 }
             }
-            return ts[idx];
+            return values[idx];
         });
     }
 
@@ -120,9 +116,9 @@ public class ParallelList implements ListIP {
             });
         }
 
-        return parallelInvoker.getAll(booleans -> {
-            for (Boolean aBoolean : booleans) {
-                if (aBoolean != null && !aBoolean) {
+        return parallelInvoker.getAll((booleans, size) -> {
+            for (int j = 0; j < size; j++) {
+                if (!booleans[j]) {
                     return false;
                 }
             }
@@ -153,9 +149,9 @@ public class ParallelList implements ListIP {
             });
         }
 
-        return parallelInvoker.getAll(booleans -> {
-            for (Boolean aBoolean : booleans) {
-                if (aBoolean != null && aBoolean) {
+        return parallelInvoker.getAll((booleans, size) -> {
+            for (int j = 0; j < size; j++) {
+                if (booleans[j]) {
                     return true;
                 }
             }
@@ -183,11 +179,10 @@ public class ParallelList implements ListIP {
             });
         }
 
-        return parallelInvoker.getAll(strings -> {
+        return parallelInvoker.getAll((strings, size) -> {
             StringBuilder builder = new StringBuilder();
-            for (String string : strings) {
-                if (string != null)
-                    builder.append(string);
+            for (int j = 0; j < size; j++) {
+                builder.append(strings[j]);
             }
             return builder.toString();
         });
@@ -208,7 +203,7 @@ public class ParallelList implements ListIP {
             int r = Math.min(list.size(), l + interval);
             final int finalL = l;
             parallelInvoker.add(() -> {
-                List<T> res = new ArrayList<T>();
+                List<T> res = new ArrayList<>();
                 for (int j = finalL; j < r; j++) {
                     if (predicate.test(list.get(j)))
                         res.add(list.get(j));
@@ -217,13 +212,12 @@ public class ParallelList implements ListIP {
             });
         }
 
-        return parallelInvoker.getAll(lists -> {
-            List<T> res = new ArrayList<T>();
-            for (List<T> list1 : lists) {
-                if (list1 != null)
-                    res.addAll(list1);
+        return parallelInvoker.getAll((lists, size) -> {
+            List<T> result = new ArrayList<>();
+            for (int j = 0; j < size; j++) {
+                result.addAll(lists[j]);
             }
-            return res;
+            return result;
         });
     }
 
@@ -249,11 +243,10 @@ public class ParallelList implements ListIP {
             });
         }
 
-        return parallelInvoker.getAll(lists -> {
+        return parallelInvoker.getAll((lists, size) -> {
             List<U> res = new ArrayList<>();
-            for (List<U> list1 : lists) {
-                if (list1 != null)
-                    res.addAll(list1);
+            for (int j = 0; j < size; j++) {
+                res.addAll(lists[j]);
             }
             return res;
         });
