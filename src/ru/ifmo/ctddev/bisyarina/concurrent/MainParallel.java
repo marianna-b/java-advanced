@@ -5,9 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
-/**
- * Created by mariashka on 3/21/15.
- */
 public class MainParallel {
     public static void main(String[] args) {
         List<Integer> list = new ArrayList<>();
