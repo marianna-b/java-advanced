@@ -16,6 +16,23 @@ import java.util.stream.Collectors;
  */
 
 public class IterativeParallelism implements ListIP {
+    private ParallelInvoker parallelInvoker;
+
+    IterativeParallelism(ParallelMapper mapper) {
+        parallelInvoker = new ParallelInvoker(mapper);
+    }
+
+    /**
+     * Returns value computed by given monoid from results of parallel computing
+     * @param monoid monoid to compute result
+     * @return value computed by given monoid
+     * @throws InterruptedException if any thread computing result has interrupted the current thread.
+     */
+    private <T> T unionResults(Monoid<T> monoid, List<T> results) throws InterruptedException {
+        results.forEach(monoid::process);
+        return monoid.get();
+    }
+
     /**
      * Returns maximum element of list. If it is not unique - the first
      * @param i amount of threads to use
@@ -32,8 +49,7 @@ public class IterativeParallelism implements ListIP {
             subList.forEach(monoid::process);
             return monoid.get();
         };
-        ParallelInvoker<T> parallelInvoker = new ParallelInvoker<>(i, list, g);
-        return parallelInvoker.get(new Monoid<>(f));
+        return unionResults(new Monoid<>(f), parallelInvoker.splitProcess(i, list, g));
     }
 
     /**
@@ -52,8 +68,8 @@ public class IterativeParallelism implements ListIP {
             subList.forEach(monoid::process);
             return monoid.get();
         };
-        ParallelInvoker<T> parallelInvoker = new ParallelInvoker<>(i, list, g);
-        return parallelInvoker.get(new Monoid<>(f));
+
+        return unionResults(new Monoid<>(f), parallelInvoker.splitProcess(i, list, g));
     }
 
     /**
@@ -75,8 +91,7 @@ public class IterativeParallelism implements ListIP {
             return monoid.get();
         };
 
-        ParallelInvoker<Boolean> parallelInvoker = new ParallelInvoker<>(i, list, g);
-        return parallelInvoker.get(new Monoid<>(f, true));
+        return unionResults(new Monoid<>(f, true), parallelInvoker.splitProcess(i, list, g));
     }
 
     /**
@@ -97,8 +112,7 @@ public class IterativeParallelism implements ListIP {
             }
             return monoid.get();
         };
-        ParallelInvoker<Boolean> parallelInvoker = new ParallelInvoker<>(i, list, g);
-        return parallelInvoker.get(new Monoid<>(f, false));
+        return unionResults(new Monoid<>(f, false), parallelInvoker.splitProcess(i, list, g));
     }
 
     /**
@@ -117,8 +131,9 @@ public class IterativeParallelism implements ListIP {
             }
             return builder;
         };
-        ParallelInvoker<StringBuilder> parallelInvoker = new ParallelInvoker<>(i, list, g);
-        return parallelInvoker.get(new Monoid<>(f)).toString();
+
+        return unionResults(new Monoid<>(f),
+                parallelInvoker.splitProcess(i, list, g)).toString();
     }
 
     /**
@@ -139,8 +154,8 @@ public class IterativeParallelism implements ListIP {
         //noinspection RedundantCast - errors while compiling otherwise
         Function<List<? extends T>, Supplier<List<T>>> g = (subList) -> () ->
                 subList.stream().filter(predicate::test).map((element) -> (T) element).collect(Collectors.toList());
-        ParallelInvoker<List<T>> parallelInvoker = new ParallelInvoker<>(i, list, g);
-        return parallelInvoker.get(new Monoid<>(f));
+
+        return unionResults(new Monoid<>(f), parallelInvoker.splitProcess(i, list, g));
     }
 
     /**
@@ -160,7 +175,6 @@ public class IterativeParallelism implements ListIP {
         };
         Function<List<? extends T>, Supplier<List<U>>> g = (subList) -> () ->
                 subList.stream().map(function::apply).map((element) -> (U) element).collect(Collectors.toList());
-        ParallelInvoker<List<U>> parallelInvoker = new ParallelInvoker<>(i, list, g);
-        return parallelInvoker.get(new Monoid<>(f));
+        return unionResults(new Monoid<>(f), parallelInvoker.splitProcess(i, list, g));
     }
 }

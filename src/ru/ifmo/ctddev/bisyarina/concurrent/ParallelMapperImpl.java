@@ -1,9 +1,6 @@
 package ru.ifmo.ctddev.bisyarina.concurrent;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -11,7 +8,7 @@ import java.util.function.Function;
  */
 public class ParallelMapperImpl implements ParallelMapper {
     private Thread[] threads;
-    private final Queue<Runnable> queue = new PriorityQueue<>();
+    private final Queue<Runnable> queue = new LinkedList<>();
 
     ParallelMapperImpl(int threadAmount) {
         this.threads = new Thread[threadAmount];
@@ -19,13 +16,17 @@ public class ParallelMapperImpl implements ParallelMapper {
             this.threads[i] = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Runnable f;
-                    synchronized (queue) {
-                        f = queue.poll();
+                    boolean isInterrupted = false;
+                    while (!isInterrupted) {
+                        try {
+                            get().run();
+                        } catch (InterruptedException e) {
+                            isInterrupted = true;
+                        }
                     }
-                    f.run();
                 }
             });
+            threads[i].start();
         }
     }
 
@@ -34,21 +35,41 @@ public class ParallelMapperImpl implements ParallelMapper {
         int[] counter = new int[1];
         @SuppressWarnings("unchecked")
         R[] results = (R[]) new Object[args.size()];
-        synchronized (queue) {
-            for (int i = 0; i < args.size(); i++) {
-                final int finalI = i;
-                queue.add(() -> {
-                    results[finalI] = f.apply(args.get(finalI));
+        for (int i = 0; i < args.size(); i++) {
+            final int finalI = i;
+            set(() -> {
+                results[finalI] = f.apply(args.get(finalI));
+                synchronized (counter) {
                     counter[0]++;
-                    if (counter[0] == args.size())
-                        notifyAll();
-                });
+                    if (counter[0] == args.size()) {
+                        counter.notifyAll();
+                    }
+                }
+            });
+        }
+
+        synchronized (counter) {
+            while (counter[0] < args.size()) {
+                counter.wait();
             }
         }
-        while (counter[0] < args.size()) {
-            wait();
-        }
         return Arrays.asList(results);
+    }
+
+    private Runnable get() throws InterruptedException {
+        synchronized (queue) {
+            while (queue.isEmpty()) {
+                queue.wait();
+            }
+        return queue.poll();
+        }
+    }
+
+    private void set(Runnable r) throws InterruptedException {
+        synchronized (queue) {
+            queue.add(r);
+            queue.notify();
+        }
     }
 
     @Override

@@ -17,9 +17,11 @@ public class MainParallel {
         list.add(10);
         list.add(-1);
         list.add(11);
-        IterativeParallelism iterativeParallelism = new IterativeParallelism();
+        ParallelMapper mapper = new ParallelMapperImpl(3);
+        IterativeParallelism iterativeParallelism = new IterativeParallelism(mapper);
         try {
             System.err.println(iterativeParallelism.minimum(3, list, Comparator.<Integer>naturalOrder()));
+
             System.err.println(iterativeParallelism.maximum(3, list, Comparator.<Integer>naturalOrder()));
             System.err.println(iterativeParallelism.any(3, list, new Predicate<Integer>() {
                 @Override
@@ -46,8 +48,10 @@ public class MainParallel {
                 }
             }));
             System.err.println(iterativeParallelism.concat(3, list));
+            mapper.close();
         } catch (InterruptedException e) {
             System.err.println(e.getMessage());
         }
+
     }
 }
