@@ -19,9 +19,9 @@ public interface ParallelMapper extends AutoCloseable {
      */
     <T, R> List<R> run(Function<? super T, ? extends R> f, List<? extends T> args) throws InterruptedException;
 
-    @Override
     /**
      * Interrupts all working threads
      */
+    @Override
     void close() throws InterruptedException;
 }
