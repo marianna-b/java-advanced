@@ -6,24 +6,33 @@ import java.util.function.Function;
  * {@link ru.ifmo.ctddev.bisyarina.concurrent.ParallelMapperImpl} provides functionality to process task
  * using multiple threads
  */
+@SuppressWarnings("SynchronizeOnNonFinalField")
 public class ParallelMapperImpl implements ParallelMapper {
-    private final Thread[] threads;
     private final Queue<Runnable> queue = new LinkedList<>();
+    private Boolean isInterrupted = false;
 
     /**
      * Constructs mapper using given amount of threads to process tasks
      * @param threadAmount amount of threads
      */
     ParallelMapperImpl(int threadAmount) {
-        this.threads = new Thread[threadAmount];
+        Thread[] threads = new Thread[threadAmount];
         for (int i = 0; i < threadAmount; i++) {
-            this.threads[i] = new Thread(new Runnable() {
+            threads[i] = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    boolean isInterrupted = false;
-                    while (!isInterrupted) {
+                    while (true) {
                         try {
-                            get().run();
+                            synchronized (queue) {
+                                while (queue.isEmpty()) {
+                                    synchronized (isInterrupted) {
+                                        if (isInterrupted)
+                                            return;
+                                    }
+                                    queue.wait();
+                                }
+                                queue.poll().run();
+                            }
                         } catch (InterruptedException e) {
                             isInterrupted = true;
                         }
@@ -61,15 +70,6 @@ public class ParallelMapperImpl implements ParallelMapper {
         return Arrays.asList(results);
     }
 
-    private Runnable get() throws InterruptedException {
-        synchronized (queue) {
-            while (queue.isEmpty()) {
-                queue.wait();
-            }
-        return queue.poll();
-        }
-    }
-
     private void set(Runnable r) {
         synchronized (queue) {
             queue.add(r);
@@ -79,8 +79,11 @@ public class ParallelMapperImpl implements ParallelMapper {
 
     @Override
     public void close() throws InterruptedException {
-        for (Thread thread : threads) {
-            thread.interrupt();
+        synchronized (isInterrupted) {
+            isInterrupted = true;
+        }
+        synchronized (queue) {
+            queue.notifyAll();
         }
     }
 }
