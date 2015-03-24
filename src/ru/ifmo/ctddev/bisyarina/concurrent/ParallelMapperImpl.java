@@ -6,10 +6,9 @@ import java.util.function.Function;
  * {@link ru.ifmo.ctddev.bisyarina.concurrent.ParallelMapperImpl} provides functionality to process task
  * using multiple threads
  */
-@SuppressWarnings("SynchronizeOnNonFinalField")
 public class ParallelMapperImpl implements ParallelMapper {
     private final Queue<Runnable> queue = new LinkedList<>();
-    private Boolean isInterrupted = false;
+    private volatile boolean isInterrupted = false;
 
     /**
      * Constructs mapper using given amount of threads to process tasks
@@ -25,7 +24,7 @@ public class ParallelMapperImpl implements ParallelMapper {
                         try {
                             synchronized (queue) {
                                 while (queue.isEmpty()) {
-                                    synchronized (isInterrupted) {
+                                    synchronized (this) {
                                         if (isInterrupted)
                                             return;
                                     }
@@ -55,7 +54,7 @@ public class ParallelMapperImpl implements ParallelMapper {
                 synchronized (counter) {
                     counter[0]++;
                     if (counter[0] == args.size()) {
-                        counter.notifyAll();
+                        counter.notify();
                     }
                 }
             });
@@ -79,7 +78,7 @@ public class ParallelMapperImpl implements ParallelMapper {
 
     @Override
     public void close() throws InterruptedException {
-        synchronized (isInterrupted) {
+        synchronized (this) {
             isInterrupted = true;
         }
         synchronized (queue) {
