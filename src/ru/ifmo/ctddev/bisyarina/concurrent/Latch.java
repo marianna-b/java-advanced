@@ -1,8 +1,5 @@
 package ru.ifmo.ctddev.bisyarina.concurrent;
 
-/**
- * Created by mariashka on 3/25/15.
- */
 public class Latch {
     private volatile int counter;
 

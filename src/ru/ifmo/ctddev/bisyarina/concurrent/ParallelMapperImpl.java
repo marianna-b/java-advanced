@@ -21,27 +21,29 @@ public class ParallelMapperImpl implements ParallelMapper{
      */
     public ParallelMapperImpl(int threadAmount) {
         Thread[] threads = new Thread[threadAmount];
+
         for (int i = 0; i < threadAmount; i++) {
             threads[i] = new Thread(new Runnable() {
+
                 @Override
                 public void run() {
-                    while (true) {
-                        try {
-                            Runnable f;
-                            synchronized (ParallelMapperImpl.this) {
-                                while (queue.isEmpty()) {
-                                    if (isInterrupted)
-                                        return;
-                                    ParallelMapperImpl.this.wait();
+                    try {
+                        Runnable f;
+                        synchronized (ParallelMapperImpl.this) {
+                            while (queue.isEmpty()) {
+                                if (isInterrupted) {
+                                    return;
                                 }
-                                f = queue.poll();
+                                ParallelMapperImpl.this.wait();
                             }
-                            f.run();
-                        } catch (InterruptedException e) {
-                            synchronized (ParallelMapperImpl.this) {
-                                isInterrupted = true;
-                                ParallelMapperImpl.this.notifyAll();
-                            }
+                            f = queue.poll();
+                        }
+                        f.run();
+                        run();
+                    } catch (InterruptedException e) {
+                        synchronized (ParallelMapperImpl.this) {
+                            isInterrupted = true;
+                            ParallelMapperImpl.this.notifyAll();
                         }
                     }
                 }
@@ -67,18 +69,14 @@ public class ParallelMapperImpl implements ParallelMapper{
         return Arrays.asList(results);
     }
 
-    private void set(Runnable r) {
-        synchronized (this) {
-            queue.add(r);
-            this.notify();
-        }
+    private synchronized void set(Runnable r) {
+        queue.add(r);
+        this.notify();
     }
 
     @Override
-    public void close() throws InterruptedException {
-        synchronized (this) {
-            isInterrupted = true;
-            this.notifyAll();
-        }
+    public synchronized void close() throws InterruptedException {
+        isInterrupted = true;
+        this.notifyAll();
     }
 }
