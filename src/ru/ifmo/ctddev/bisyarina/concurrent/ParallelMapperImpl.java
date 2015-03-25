@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.function.Function;
 /**
- * {@link ru.ifmo.ctddev.bisyarina.concurrent.ParallelMapperImpl} provides functionality to process task
- * using multiple threads
+ * Class provides functionality to process task using multiple threads
  */
 public class ParallelMapperImpl implements ParallelMapper{
     private Queue<Runnable> queue = new ArrayDeque<>();
@@ -24,11 +23,10 @@ public class ParallelMapperImpl implements ParallelMapper{
 
         for (int i = 0; i < threadAmount; i++) {
             threads[i] = new Thread(new Runnable() {
-
+                Runnable f;
                 @Override
                 public void run() {
                     try {
-                        Runnable f;
                         synchronized (ParallelMapperImpl.this) {
                             while (queue.isEmpty()) {
                                 if (isInterrupted) {
@@ -53,6 +51,15 @@ public class ParallelMapperImpl implements ParallelMapper{
     }
 
     @Override
+    /**
+     * Returns a list function applying results
+     * @param f function to apply
+     * @param args list of arguments for function to apply
+     * @param <T> supertype of input values
+     * @param <R> supertype of return values
+     * @return list of results of application
+     * @throws InterruptedException if any thread computing result has interrupted the current thread.
+     */
     public <T, R> List<R> map(Function<? super T, ? extends R> f, List<? extends T> args) throws InterruptedException {
         Latch latch = new Latch(args.size());
 
@@ -65,7 +72,7 @@ public class ParallelMapperImpl implements ParallelMapper{
                 latch.inc();
             });
         }
-        latch.set();
+        latch.await();
         return Arrays.asList(results);
     }
 
@@ -75,6 +82,9 @@ public class ParallelMapperImpl implements ParallelMapper{
     }
 
     @Override
+    /**
+     * Interrupts all working threads
+     */
     public synchronized void close() throws InterruptedException {
         isInterrupted = true;
         this.notifyAll();
