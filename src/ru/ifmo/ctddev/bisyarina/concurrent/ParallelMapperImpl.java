@@ -52,26 +52,18 @@ public class ParallelMapperImpl implements ParallelMapper{
 
     @Override
     public <T, R> List<R> map(Function<? super T, ? extends R> f, List<? extends T> args) throws InterruptedException {
-        int[] counter = new int[1];
-        counter[0] = args.size();
+        Latch latch = new Latch(args.size());
+
         @SuppressWarnings("unchecked")
         R[] results = (R[]) new Object[args.size()];
         for (int i = 0; i < args.size(); i++) {
             final int finalI = i;
             set(() -> {
                 results[finalI] = f.apply(args.get(finalI));
-                synchronized (counter) {
-                    counter[0]--;
-                    if (counter[0] == 0)
-                        counter.notify();
-                }
+                latch.inc();
             });
         }
-        synchronized (counter) {
-            while (counter[0] > 0) {
-                counter.wait();
-            }
-        }
+        latch.set();
         return Arrays.asList(results);
     }
 
