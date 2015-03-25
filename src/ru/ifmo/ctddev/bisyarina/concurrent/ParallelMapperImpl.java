@@ -11,7 +11,7 @@ import java.util.function.Function;
  * Class provides functionality to process task using multiple threads
  */
 public class ParallelMapperImpl implements ParallelMapper{
-    private Queue<Runnable> queue = new ArrayDeque<>();
+    private final Queue<Runnable> queue = new ArrayDeque<>();
     private volatile boolean isInterrupted = false;
 
     /**

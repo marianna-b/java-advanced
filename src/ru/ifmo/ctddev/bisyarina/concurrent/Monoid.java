@@ -8,7 +8,7 @@ import java.util.function.BiFunction;
  * @param <T> type of element
  */
 
-public class Monoid<T> {
+class Monoid<T> {
     private final BiFunction<T, T, T> f;
     private boolean identity;
     private T result;
