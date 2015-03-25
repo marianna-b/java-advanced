@@ -12,7 +12,7 @@ import java.util.function.Function;
  * using multiple threads
  */
 public class ParallelMapperImpl implements ParallelMapper{
-    private final Queue<Runnable> queue = new ArrayDeque<>();
+    private Queue<Runnable> queue = new ArrayDeque<>();
     private volatile boolean isInterrupted = false;
 
     /**
@@ -28,19 +28,20 @@ public class ParallelMapperImpl implements ParallelMapper{
                     while (true) {
                         try {
                             Runnable f;
-                            synchronized (queue) {
+                            synchronized (ParallelMapperImpl.this) {
                                 while (queue.isEmpty()) {
-                                    synchronized (this) {
-                                        if (isInterrupted)
-                                            return;
-                                    }
-                                    queue.wait();
+                                    if (isInterrupted)
+                                        return;
+                                    ParallelMapperImpl.this.wait();
                                 }
                                 f = queue.poll();
                             }
                             f.run();
                         } catch (InterruptedException e) {
-                            isInterrupted = true;
+                            synchronized (ParallelMapperImpl.this) {
+                                isInterrupted = true;
+                                ParallelMapperImpl.this.notifyAll();
+                            }
                         }
                     }
                 }
@@ -75,9 +76,9 @@ public class ParallelMapperImpl implements ParallelMapper{
     }
 
     private void set(Runnable r) {
-        synchronized (queue) {
+        synchronized (this) {
             queue.add(r);
-            queue.notify();
+            this.notify();
         }
     }
 
@@ -85,9 +86,7 @@ public class ParallelMapperImpl implements ParallelMapper{
     public void close() throws InterruptedException {
         synchronized (this) {
             isInterrupted = true;
-        }
-        synchronized (queue) {
-            queue.notifyAll();
+            this.notifyAll();
         }
     }
 }
