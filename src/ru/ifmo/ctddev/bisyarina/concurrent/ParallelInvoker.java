@@ -1,5 +1,7 @@
 package ru.ifmo.ctddev.bisyarina.concurrent;
 
+import info.kgeorgiy.java.advanced.mapper.ParallelMapper;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -40,6 +42,6 @@ public class ParallelInvoker {
             arg.add(list.subList(l, r));
         }
         Function<List<? extends K>, T> g = (subList) -> f.apply(subList).get();
-        return mapper.run(g, arg);
+        return mapper.map(g, arg);
     }
 }

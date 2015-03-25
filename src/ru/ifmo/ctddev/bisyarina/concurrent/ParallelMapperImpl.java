@@ -1,20 +1,25 @@
 package ru.ifmo.ctddev.bisyarina.concurrent;
 
-import java.util.*;
+import info.kgeorgiy.java.advanced.mapper.ParallelMapper;
+
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Queue;
 import java.util.function.Function;
 /**
  * {@link ru.ifmo.ctddev.bisyarina.concurrent.ParallelMapperImpl} provides functionality to process task
  * using multiple threads
  */
-public class ParallelMapperImpl implements ParallelMapper {
-    private final Queue<Runnable> queue = new LinkedList<>();
+public class ParallelMapperImpl implements ParallelMapper{
+    private final Queue<Runnable> queue = new ArrayDeque<>();
     private volatile boolean isInterrupted = false;
 
     /**
      * Constructs mapper using given amount of threads to process tasks
      * @param threadAmount amount of threads
      */
-    ParallelMapperImpl(int threadAmount) {
+    public ParallelMapperImpl(int threadAmount) {
         Thread[] threads = new Thread[threadAmount];
         for (int i = 0; i < threadAmount; i++) {
             threads[i] = new Thread(new Runnable() {
@@ -22,6 +27,7 @@ public class ParallelMapperImpl implements ParallelMapper {
                 public void run() {
                     while (true) {
                         try {
+                            Runnable f;
                             synchronized (queue) {
                                 while (queue.isEmpty()) {
                                     synchronized (this) {
@@ -30,8 +36,9 @@ public class ParallelMapperImpl implements ParallelMapper {
                                     }
                                     queue.wait();
                                 }
-                                queue.poll().run();
+                                f = queue.poll();
                             }
+                            f.run();
                         } catch (InterruptedException e) {
                             isInterrupted = true;
                         }
@@ -43,8 +50,9 @@ public class ParallelMapperImpl implements ParallelMapper {
     }
 
     @Override
-    public <T, R> List<R> run(Function<? super T, ? extends R> f, List<? extends T> args) throws InterruptedException {
+    public <T, R> List<R> map(Function<? super T, ? extends R> f, List<? extends T> args) throws InterruptedException {
         int[] counter = new int[1];
+        counter[0] = args.size();
         @SuppressWarnings("unchecked")
         R[] results = (R[]) new Object[args.size()];
         for (int i = 0; i < args.size(); i++) {
@@ -52,17 +60,14 @@ public class ParallelMapperImpl implements ParallelMapper {
             set(() -> {
                 results[finalI] = f.apply(args.get(finalI));
                 synchronized (counter) {
-                    counter[0]++;
-                    if (counter[0] == args.size()) {
+                    counter[0]--;
+                    if (counter[0] == 0)
                         counter.notify();
-                    }
                 }
             });
         }
-
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (counter) {
-            while (counter[0] < args.size()) {
+            while (counter[0] > 0) {
                 counter.wait();
             }
         }

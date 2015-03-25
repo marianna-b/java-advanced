@@ -1,6 +1,7 @@
 package ru.ifmo.ctddev.bisyarina.concurrent;
 
 import info.kgeorgiy.java.advanced.concurrent.ListIP;
+import info.kgeorgiy.java.advanced.mapper.ParallelMapper;
 
 import java.util.Comparator;
 import java.util.List;
@@ -22,7 +23,7 @@ public class IterativeParallelism implements ListIP {
      * Constructs IterativeParallelism instance using given mapper
      * @param mapper mapper for parallel invoking
      */
-    IterativeParallelism(ParallelMapper mapper) {
+    public IterativeParallelism(ParallelMapper mapper) {
         parallelInvoker = new ParallelInvoker(mapper);
     }
 

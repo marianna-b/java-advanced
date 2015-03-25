@@ -1,5 +1,7 @@
 package ru.ifmo.ctddev.bisyarina.concurrent;
 
+import info.kgeorgiy.java.advanced.mapper.ParallelMapper;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
