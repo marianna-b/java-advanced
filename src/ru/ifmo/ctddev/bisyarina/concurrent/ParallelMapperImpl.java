@@ -52,6 +52,11 @@ public class ParallelMapperImpl implements ParallelMapper{
 
     @Override
     public <T, R> List<R> map(Function<? super T, ? extends R> f, List<? extends T> args) throws InterruptedException {
+        synchronized (this) {
+            if (isInterrupted) {
+                throw new InterruptedException();
+            }
+        }
         Latch latch = new Latch(args.size());
 
         @SuppressWarnings("unchecked")
