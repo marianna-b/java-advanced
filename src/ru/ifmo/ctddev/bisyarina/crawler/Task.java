@@ -61,6 +61,7 @@ public class Task {
                 extracting.submit(() -> {
                     try {
                         List<String> links = document.extractLinks();
+                        list.addAll(links);
                         if (!Task.this.checkDepth()) {
                             latch.dec();
                             return;
@@ -71,7 +72,6 @@ public class Task {
                             extracting.submit(task.getDownloader());
                         }
 
-                        list.addAll(links);
                         latch.addCounter(links.size());
                         latch.dec();
 

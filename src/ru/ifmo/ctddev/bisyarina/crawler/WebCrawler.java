@@ -26,6 +26,7 @@ public class WebCrawler implements Crawler {
         Task.extracting = extracting;
         Task.downloading = downloading;
         Task.perHost = perHost;
+        Task.hosts = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -57,15 +58,17 @@ public class WebCrawler implements Crawler {
             System.err.println("Not enough parameters");
             return;
         }
-        int depth = Integer.getInteger(args[1]);
-        int downloaders = Integer.getInteger(args[2]);
-        int extractors = Integer.getInteger(args[3]);
-        int perHost = Integer.getInteger(args[4]);
+        int depth = Integer.parseInt(args[1]);
+        int downloaders = Integer.parseInt(args[2]);
+        int extractors = Integer.parseInt(args[3]);
+        int perHost = Integer.parseInt(args[4]);
 
         try {
             Downloader downloader = new CachingDownloader(new File("."));
             WebCrawler crawler = new WebCrawler(downloader, downloaders, extractors, perHost);
             List<String> list = crawler.download(args[0], depth);
+            crawler.close();
+
             for (String item : list) {
                 System.out.println(item);
             }
