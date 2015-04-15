@@ -1,28 +1,15 @@
 package ru.ifmo.ctddev.bisyarina.crawler;
 
 import info.kgeorgiy.java.advanced.crawler.Document;
-import info.kgeorgiy.java.advanced.crawler.Downloader;
 import info.kgeorgiy.java.advanced.crawler.URLUtils;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.AbstractExecutorService;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.BiFunction;
 
 public class Task {
+    private final CrawlerInvoke invoke;
 
-    public static AbstractExecutorService extracting;
-    public static AbstractExecutorService downloading;
-    public static Downloader downloader;
-    public static ConcurrentMap<String, ChangedValue> hosts;
-    public static int perHost = 0;
-
-    private BiFunction<String, ChangedValue, ChangedValue> remap = (s, changedValue) -> {
-        changedValue.incIfLess(perHost);
-        return changedValue;
-    };
 
     private int depth = 0;
     private final int neededDepth;
@@ -31,34 +18,43 @@ public class Task {
     private CopyOnWriteArrayList<String> list;
 
 
-    Task(String url, int depth, int neededDepth, CopyOnWriteArrayList<String> list, AppendableLatch latch) {
+    Task(String url, int depth, int neededDepth, CopyOnWriteArrayList<String> list, AppendableLatch latch,
+         CrawlerInvoke invoke) {
         this.neededDepth = neededDepth;
         this.depth = depth;
         this.url = url;
         this.latch = latch;
         this.list = list;
+
+        this.invoke = invoke;
     }
 
     public boolean checkDepth() {
         return depth < neededDepth;
     }
 
+    private ChangedValue remap (String s, ChangedValue changedValue) {
+        changedValue.incIfLess(invoke.getPerHost());
+        return changedValue;
+    }
+
     private Task getChild(String s) {
-        return new Task(s, depth + 1, neededDepth, list, latch);
+        return new Task(s, depth + 1, neededDepth, list, latch, invoke);
     }
 
     public Runnable getDownloader() {
         return () -> {
             try {
                 String host = URLUtils.getHost(url);
-                hosts.putIfAbsent(host, new ChangedValue(0));
+                invoke.getHosts().putIfAbsent(host, new ChangedValue(0));
 
-                if (!hosts.computeIfPresent(host, remap).changed) {
-                    downloading.submit(Task.this.getDownloader());
+                if (!invoke.getHosts().computeIfPresent(host, this::remap).changed) {
+                    invoke.getDownloading().submit(Task.this.getDownloader());
+                    return;
                 }
 
-                Document document = downloader.download(url);
-                extracting.submit(() -> {
+                Document document = invoke.getDownloader().download(url);
+                invoke.getExtracting().submit(() -> {
                     try {
                         List<String> links = document.extractLinks();
                         list.addAll(links);
@@ -69,7 +65,7 @@ public class Task {
 
                         for (String link : links) {
                             Task task = getChild(link);
-                            extracting.submit(task.getDownloader());
+                            invoke.getExtracting().submit(task.getDownloader());
                         }
 
                         latch.addCounter(links.size());

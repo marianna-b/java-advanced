@@ -10,31 +10,19 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public class WebCrawler implements Crawler {
-    private final int CAPACITY = 100000;
 
-    private final AbstractExecutorService downloading;
-    private final AbstractExecutorService extracting;
-
+    private CrawlerInvoke invoke;
 
     public WebCrawler(Downloader downloader, int downloaders, int extractors, int perHost) {
-        downloading = new ThreadPoolExecutor(1, downloaders, 1, TimeUnit.SECONDS,
-                new ArrayBlockingQueue<>(CAPACITY));
-        extracting = new ThreadPoolExecutor(1, extractors, 1, TimeUnit.SECONDS,
-                new ArrayBlockingQueue<>(CAPACITY));
-
-        Task.downloader = downloader;
-        Task.extracting = extracting;
-        Task.downloading = downloading;
-        Task.perHost = perHost;
-        Task.hosts = new ConcurrentHashMap<>();
+        invoke = new CrawlerInvoke(downloader, downloaders, extractors, perHost);
     }
 
     @Override
     public List<String> download(String url, int depth) throws IOException {
         CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<>();
         AppendableLatch latch = new AppendableLatch(1);
-        Task t = new Task(url, 1, depth, list, latch);
-        downloading.submit(t.getDownloader());
+        Task t = new Task(url, 1, depth, list, latch, invoke);
+        invoke.getDownloading().submit(t.getDownloader());
         try {
             latch.await();
         } catch (InterruptedException e) {
@@ -45,8 +33,7 @@ public class WebCrawler implements Crawler {
 
     @Override
     public void close() {
-        downloading.shutdown();
-        extracting.shutdown();
+        invoke.close();
     }
 
     public static void main(String[] args) {
@@ -69,9 +56,7 @@ public class WebCrawler implements Crawler {
             List<String> list = crawler.download(args[0], depth);
             crawler.close();
 
-            for (String item : list) {
-                System.out.println(item);
-            }
+            list.forEach(System.out::println);
         } catch (IOException e) {
             System.err.println(e.toString());
         }
