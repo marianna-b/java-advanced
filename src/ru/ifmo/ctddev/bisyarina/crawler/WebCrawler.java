@@ -22,7 +22,7 @@ public class WebCrawler implements Crawler {
         CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<>();
         AppendableLatch latch = new AppendableLatch(1);
         Task t = new Task(url, 1, depth, list, latch, invoke);
-        invoke.getDownloading().submit(t.getDownloader());
+        invoke.getDownloading().submit(t::getDownloader);
         try {
             latch.await();
         } catch (InterruptedException e) {
