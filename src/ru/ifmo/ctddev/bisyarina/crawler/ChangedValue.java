@@ -17,4 +17,9 @@ public class ChangedValue {
             value++;
         }
     }
+
+    public void dec() {
+        this.value--;
+        this.changed = false;
+    }
 }

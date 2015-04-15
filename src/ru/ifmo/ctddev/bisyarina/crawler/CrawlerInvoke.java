@@ -15,9 +15,9 @@ public class CrawlerInvoke {
         int CAPACITY = 100000;
 
         this.downloader = downloader;
-        this.downloading = new ThreadPoolExecutor(1, d, 1, TimeUnit.SECONDS,
+        this.downloading = new ThreadPoolExecutor(1, d, 1, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(CAPACITY));
-        this.extracting = new ThreadPoolExecutor(1, e, 1, TimeUnit.SECONDS,
+        this.extracting = new ThreadPoolExecutor(1, e, 1, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(CAPACITY));
         this.perHost = perHost;
         this.hosts = new ConcurrentHashMap<>();

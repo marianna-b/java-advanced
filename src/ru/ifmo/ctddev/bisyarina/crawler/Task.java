@@ -33,8 +33,13 @@ public class Task {
         return depth < neededDepth;
     }
 
-    private ChangedValue remap (String s, ChangedValue changedValue) {
+    private ChangedValue remapAdd(String s, ChangedValue changedValue) {
         changedValue.incIfLess(invoke.getPerHost());
+        return changedValue;
+    }
+
+    private ChangedValue remapDel(String s, ChangedValue changedValue) {
+        changedValue.dec();
         return changedValue;
     }
 
@@ -48,12 +53,13 @@ public class Task {
                 String host = URLUtils.getHost(url);
                 invoke.getHosts().putIfAbsent(host, new ChangedValue(0));
 
-                if (!invoke.getHosts().computeIfPresent(host, this::remap).changed) {
+                if (!invoke.getHosts().computeIfPresent(host, this::remapAdd).changed) {
                     invoke.getDownloading().submit(Task.this.getDownloader());
                     return;
                 }
 
                 Document document = invoke.getDownloader().download(url);
+                invoke.getHosts().computeIfPresent(host, this::remapDel);
                 invoke.getExtracting().submit(() -> {
                     try {
                         List<String> links = document.extractLinks();
@@ -71,7 +77,8 @@ public class Task {
                         latch.addCounter(links.size());
                         latch.dec();
 
-                    } catch (IOException ignored) {}
+                    } catch (IOException ignored) {
+                    }
 
                 });
             } catch (IOException ignored) {}
