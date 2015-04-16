@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: ru.ifmo.ctddev.bisyarina.implementor.Implementor
-Class-Path: ./src ImplementorTest.jar junit-4.11.jar quickcheck-0.6.jar hamcrest-core-1.3.jar
-Created-By: 1.8.0.31 (Oracle Corporation)
