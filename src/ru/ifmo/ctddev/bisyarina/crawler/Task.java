@@ -71,11 +71,7 @@ class Task {
             Document document = invoke.getDownloader().download(url);
 
             invoke.pollToDownloading(host, this::remapDel);
-            if (checkDepth()) {
-                invoke.getExtracting().execute(getExtractor(document));
-            } else {
-                latch.dec();
-            }
+            invoke.getExtracting().execute(getExtractor(document));
         } catch (IOException ignored) {
             invoke.pollToDownloading(host, this::remapDel);
             latch.dec();
@@ -90,9 +86,11 @@ class Task {
                 synchronized (list) {
                     list.addAll(links);
                 }
-                latch.addCounter(links.size());
-                for (String link : links) {
-                    invoke.getDownloading().execute(getChild(link)::getDownloader);
+                if (checkDepth()) {
+                    latch.addCounter(links.size());
+                    for (String link : links) {
+                        invoke.getDownloading().execute(getChild(link)::getDownloader);
+                    }
                 }
             } catch (IOException ignored) {
             } finally {
