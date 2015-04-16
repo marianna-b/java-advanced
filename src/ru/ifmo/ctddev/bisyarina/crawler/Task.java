@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 class Task {
     private final CrawlerInvoke invoke;
@@ -72,18 +71,10 @@ class Task {
             Document document = invoke.getDownloader().download(url);
 
             invoke.getHosts().computeIfPresent(host, this::remapDel);
-            synchronized (invoke.getDelayedHosts()) {
-                Queue<Runnable> q = invoke.getDelayedHosts().get(host);
-                while (q != null && !q.isEmpty()) {
-                    invoke.getDownloading().execute(q.poll());
-                }
-            }
+            invoke.pollToDownloading(host, this::remapDel);
             invoke.getExtracting().execute(getExtractor(document));
         } catch (IOException ignored) {
-            invoke.getHosts().computeIfPresent(host, this::remapDel);
-            synchronized (invoke.getDelayedHosts()) {
-                invoke.getDownloading().execute(invoke.getDelayedHosts().get(host).poll());
-            }
+            invoke.pollToDownloading(host, this::remapDel);
             latch.dec();
         }
     }

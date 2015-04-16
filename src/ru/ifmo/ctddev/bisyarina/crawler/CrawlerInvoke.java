@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiFunction;
 
 class CrawlerInvoke {
     private final ExecutorService extracting;
@@ -61,5 +62,14 @@ class CrawlerInvoke {
 
     public Map<String, Queue<Runnable>> getDelayedHosts() {
         return delayedHosts;
+    }
+
+    public void pollToDownloading(String host, BiFunction<String, ChangedValue, ChangedValue> remapDel) {
+        hosts.computeIfPresent(host, remapDel);
+        synchronized (delayedHosts) {
+            Queue<Runnable> q = delayedHosts.get(host);
+            if (q != null && !q.isEmpty())
+                downloading.execute(q.poll());
+        }
     }
 }
