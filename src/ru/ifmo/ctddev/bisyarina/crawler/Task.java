@@ -78,11 +78,7 @@ class Task {
                     invoke.getDownloading().execute(q.poll());
                 }
             }
-            if (checkDepth()) {
-                invoke.getExtracting().execute(getExtractor(document));
-            } else {
-                latch.dec();
-            }
+            invoke.getExtracting().execute(getExtractor(document));
         } catch (IOException ignored) {
             invoke.getHosts().computeIfPresent(host, this::remapDel);
             synchronized (invoke.getDelayedHosts()) {
@@ -100,9 +96,11 @@ class Task {
                 synchronized (list) {
                     list.addAll(links);
                 }
-                latch.addCounter(links.size());
-                for (String link : links) {
-                    invoke.getDownloading().execute(getChild(link)::getDownloader);
+                if (checkDepth()) {
+                    latch.addCounter(links.size());
+                    for (String link : links) {
+                        invoke.getDownloading().execute(getChild(link)::getDownloader);
+                    }
                 }
             } catch (IOException ignored) {
             } finally {
