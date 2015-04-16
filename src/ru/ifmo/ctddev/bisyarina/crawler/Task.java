@@ -5,7 +5,9 @@ import info.kgeorgiy.java.advanced.crawler.URLUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 class Task {
     private final CrawlerInvoke invoke;
@@ -55,7 +57,10 @@ class Task {
             invoke.getHosts().putIfAbsent(host, new ChangedValue(0));
 
             if (!invoke.getHosts().computeIfPresent(host, this::remapAdd).changed) {
-                invoke.getDownloading().execute(this::getDownloader);
+                synchronized (invoke.getDelayedHosts()) {
+                    invoke.getDelayedHosts().putIfAbsent(host, new LinkedList<>());
+                    invoke.getDelayedHosts().get(host).add(this::getDownloader);
+                }
                 return;
             }
         } catch (MalformedURLException e) {
@@ -65,11 +70,24 @@ class Task {
 
         try {
             Document document = invoke.getDownloader().download(url);
-            invoke.getHosts().computeIfPresent(host, this::remapDel);
 
-            invoke.getExtracting().execute(getExtractor(document));
+            invoke.getHosts().computeIfPresent(host, this::remapDel);
+            synchronized (invoke.getDelayedHosts()) {
+                Queue<Runnable> q = invoke.getDelayedHosts().get(host);
+                while (q != null && !q.isEmpty()) {
+                    invoke.getDownloading().execute(q.poll());
+                }
+            }
+            if (checkDepth()) {
+                invoke.getExtracting().execute(getExtractor(document));
+            } else {
+                latch.dec();
+            }
         } catch (IOException ignored) {
             invoke.getHosts().computeIfPresent(host, this::remapDel);
+            synchronized (invoke.getDelayedHosts()) {
+                invoke.getDownloading().execute(invoke.getDelayedHosts().get(host).poll());
+            }
             latch.dec();
         }
     }
@@ -82,11 +100,9 @@ class Task {
                 synchronized (list) {
                     list.addAll(links);
                 }
-                if (checkDepth()) {
-                    latch.addCounter(links.size());
-                    for (String link : links) {
-                        invoke.getDownloading().execute(getChild(link)::getDownloader);
-                    }
+                latch.addCounter(links.size());
+                for (String link : links) {
+                    invoke.getDownloading().execute(getChild(link)::getDownloader);
                 }
             } catch (IOException ignored) {
             } finally {
