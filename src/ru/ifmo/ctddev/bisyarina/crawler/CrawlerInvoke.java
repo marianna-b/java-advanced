@@ -4,7 +4,6 @@ import info.kgeorgiy.java.advanced.crawler.Downloader;
 import java.util.concurrent.*;
 
 class CrawlerInvoke {
-
     private final ExecutorService extracting;
     private final ExecutorService downloading;
     private final Downloader downloader;

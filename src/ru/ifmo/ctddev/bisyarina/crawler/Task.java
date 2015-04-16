@@ -9,14 +9,11 @@ import java.util.List;
 
 class Task {
     private final CrawlerInvoke invoke;
-
-
     private final int depth;
     private final int neededDepth;
     private final String url;
     private final AppendableLatch latch;
     private final List<String> list;
-
 
     Task(String url, int depth, int neededDepth, List<String> list, AppendableLatch latch,
          CrawlerInvoke invoke) {
