@@ -1,18 +1,20 @@
 package ru.ifmo.ctddev.bisyarina.crawler;
 
 import info.kgeorgiy.java.advanced.crawler.Downloader;
-
 import java.util.concurrent.*;
 
-public class CrawlerInvoke {
-    private AbstractExecutorService extracting;
-    private AbstractExecutorService downloading;
-    private Downloader downloader;
-    private ConcurrentMap<String, ChangedValue> hosts;
-    private int perHost = 0;
+class CrawlerInvoke {
+
+    private final AbstractExecutorService extracting;
+    private final AbstractExecutorService downloading;
+    private final Downloader downloader;
+    private final ConcurrentMap<String, ChangedValue> hosts;
+    private final ConcurrentMap<String, String> loaded;
+    private final ConcurrentMap<String, String> extracted;
+    private final int perHost;
 
     CrawlerInvoke(Downloader downloader, int d, int e, int perHost) {
-        int CAPACITY = 100000;
+        int CAPACITY = 10000000;
 
         this.downloader = downloader;
         this.downloading = new ThreadPoolExecutor(1, d, 1, TimeUnit.MILLISECONDS,
@@ -21,30 +23,40 @@ public class CrawlerInvoke {
                 new ArrayBlockingQueue<>(CAPACITY));
         this.perHost = perHost;
         this.hosts = new ConcurrentHashMap<>();
+        this.loaded = new ConcurrentHashMap<>();
+        this.extracted = new ConcurrentHashMap<>();
     }
 
-    public AbstractExecutorService getExtracting() {
+    AbstractExecutorService getExtracting() {
         return extracting;
     }
 
-    public AbstractExecutorService getDownloading() {
+    AbstractExecutorService getDownloading() {
         return downloading;
     }
 
-    public Downloader getDownloader() {
+    Downloader getDownloader() {
         return downloader;
     }
 
-    public ConcurrentMap<String, ChangedValue> getHosts() {
+    ConcurrentMap<String, ChangedValue> getHosts() {
         return hosts;
     }
 
-    public int getPerHost() {
+    int getPerHost() {
         return perHost;
     }
 
-    public void close() {
+    void close() {
         downloading.shutdown();
         extracting.shutdown();
+    }
+
+    ConcurrentMap<String, String> getLoaded() {
+        return loaded;
+    }
+
+    ConcurrentMap<String, String> getExtracted() {
+        return extracted;
     }
 }

@@ -6,12 +6,12 @@ import info.kgeorgiy.java.advanced.crawler.Downloader;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
 
 public class WebCrawler implements Crawler {
 
-    private CrawlerInvoke invoke;
+    private final CrawlerInvoke invoke;
 
     public WebCrawler(Downloader downloader, int downloaders, int extractors, int perHost) {
         invoke = new CrawlerInvoke(downloader, downloaders, extractors, perHost);
@@ -19,10 +19,11 @@ public class WebCrawler implements Crawler {
 
     @Override
     public List<String> download(String url, int depth) throws IOException {
-        CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<>();
+        List<String> list = new ArrayList<>();
         AppendableLatch latch = new AppendableLatch(1);
         Task t = new Task(url, 1, depth, list, latch, invoke);
-        invoke.getDownloading().submit(t::getDownloader);
+        list.add(url);
+        invoke.getDownloading().execute(t::getDownloader);
         try {
             latch.await();
         } catch (InterruptedException e) {

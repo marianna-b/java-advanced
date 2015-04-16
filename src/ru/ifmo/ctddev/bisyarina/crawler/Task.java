@@ -6,20 +6,19 @@ import info.kgeorgiy.java.advanced.crawler.URLUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Task {
+class Task {
     private final CrawlerInvoke invoke;
 
 
-    private int depth = 0;
+    private final int depth;
     private final int neededDepth;
-    private String url;
-    private AppendableLatch latch;
-    private CopyOnWriteArrayList<String> list;
+    private final String url;
+    private final AppendableLatch latch;
+    private final List<String> list;
 
 
-    Task(String url, int depth, int neededDepth, CopyOnWriteArrayList<String> list, AppendableLatch latch,
+    Task(String url, int depth, int neededDepth, List<String> list, AppendableLatch latch,
          CrawlerInvoke invoke) {
         this.neededDepth = neededDepth;
         this.depth = depth;
@@ -30,32 +29,36 @@ public class Task {
         this.invoke = invoke;
     }
 
-    public boolean checkDepth() {
+    boolean checkDepth() {
         return depth < neededDepth;
     }
 
-    private ChangedValue remapAdd(String s, ChangedValue changedValue) {
+    ChangedValue remapAdd(String s, ChangedValue changedValue) {
         changedValue.incIfLess(invoke.getPerHost());
         return changedValue;
     }
 
-    private ChangedValue remapDel(String s, ChangedValue changedValue) {
+    ChangedValue remapDel(String s, ChangedValue changedValue) {
         changedValue.dec();
         return changedValue;
     }
 
-    private Task getChild(String s) {
+    Task getChild(String s) {
         return new Task(s, depth + 1, neededDepth, list, latch, invoke);
     }
 
-    public void getDownloader() {
+    void getDownloader() {
+        if (invoke.getLoaded().putIfAbsent(url, url) != null) {
+            latch.dec();
+            return;
+        }
         String host;
         try {
             host = URLUtils.getHost(url);
             invoke.getHosts().putIfAbsent(host, new ChangedValue(0));
 
             if (!invoke.getHosts().computeIfPresent(host, this::remapAdd).changed) {
-                invoke.getDownloading().submit(this::getDownloader);
+                invoke.getDownloading().execute(this::getDownloader);
                 return;
             }
         } catch (MalformedURLException e) {
@@ -67,15 +70,20 @@ public class Task {
             Document document = invoke.getDownloader().download(url);
             invoke.getHosts().computeIfPresent(host, this::remapDel);
 
-            invoke.getExtracting().submit(() -> {
+            invoke.getExtracting().execute(() -> {
+                if (invoke.getExtracted().putIfAbsent(url, url) != null) {
+                    latch.dec();
+                    return;
+                }
                 try {
                     List<String> links = document.extractLinks();
-                    list.addAll(links);
+                    synchronized (list) {
+                        list.addAll(links);
+                    }
                     if (checkDepth()) {
                         latch.addCounter(links.size());
-
                         for (String link : links) {
-                            invoke.getDownloading().submit(getChild(link)::getDownloader);
+                            invoke.getDownloading().execute(getChild(link)::getDownloader);
                         }
                     }
                 } catch (IOException ignored) {}

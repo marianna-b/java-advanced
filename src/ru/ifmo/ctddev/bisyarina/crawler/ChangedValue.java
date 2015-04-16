@@ -1,15 +1,16 @@
 package ru.ifmo.ctddev.bisyarina.crawler;
 
-public class ChangedValue {
-    Integer value;
-    Boolean changed;
+class ChangedValue {
+
+    volatile Integer value;
+    volatile Boolean changed;
 
     ChangedValue(int value){
-        this.changed = false;
+        this.changed = true;
         this.value = value;
     }
 
-    public void incIfLess(int x) {
+    void incIfLess(int x) {
         if (x == value) {
             changed = false;
         } else {
@@ -18,7 +19,7 @@ public class ChangedValue {
         }
     }
 
-    public void dec() {
+    void dec() {
         this.value--;
         this.changed = false;
     }

@@ -1,19 +1,21 @@
 package ru.ifmo.ctddev.bisyarina.crawler;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Class {@link ru.ifmo.ctddev.bisyarina.concurrent.Latch} provides functionality send notification about
- * something happened given amount of times
+ * something happened given amount of times, provides functionality to increase amount of times
  */
 public class AppendableLatch {
 
-    private volatile int counter;
+    private volatile AtomicInteger counter;
 
     /**
      * Creates latch waiting for given number of events
      * @param counter number of events
      */
     public AppendableLatch(int counter) {
-        this.counter = counter;
+        this.counter = new AtomicInteger(counter);
     }
 
     /**
@@ -21,21 +23,26 @@ public class AppendableLatch {
      * @throws InterruptedException if any thread has interrupted the current thread while waiting
      */
     public synchronized void await() throws InterruptedException {
-        while (counter > 0) {
+        while (counter.get() > 0) {
             this.wait();
         }
     }
 
-    public synchronized void addCounter(int l) {
-        this.counter += l;
+    /**
+     * Adds value to counter
+     * @param val value to add
+     */
+    public void addCounter(int val) {
+        counter.addAndGet(val);
     }
 
     /**
      * Notifies that one event happened
      */
-    public synchronized void dec() {
-        counter--;
-        if (counter == 0)
+    public void dec() {
+        counter.decrementAndGet();
+        synchronized (this) {
             this.notify();
+        }
     }
 }
