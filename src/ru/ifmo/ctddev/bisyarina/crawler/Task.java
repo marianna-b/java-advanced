@@ -70,30 +70,31 @@ class Task {
             Document document = invoke.getDownloader().download(url);
             invoke.getHosts().computeIfPresent(host, this::remapDel);
 
-            invoke.getExtracting().execute(() -> {
-                if (invoke.getExtracted().putIfAbsent(url, url) != null) {
-                    latch.dec();
-                    return;
-                }
-                try {
-                    List<String> links = document.extractLinks();
-                    synchronized (list) {
-                        list.addAll(links);
-                    }
-                    if (checkDepth()) {
-                        latch.addCounter(links.size());
-                        for (String link : links) {
-                            invoke.getDownloading().execute(getChild(link)::getDownloader);
-                        }
-                    }
-                } catch (IOException ignored) {}
-                finally {
-                    latch.dec();
-                }
-            });
+            invoke.getExtracting().execute(getExtractor(document));
         } catch (IOException ignored) {
             invoke.getHosts().computeIfPresent(host, this::remapDel);
             latch.dec();
         }
+    }
+
+
+    Runnable getExtractor(Document document) {
+        return () -> {
+            try {
+                List<String> links = document.extractLinks();
+                synchronized (list) {
+                    list.addAll(links);
+                }
+                if (checkDepth()) {
+                    latch.addCounter(links.size());
+                    for (String link : links) {
+                        invoke.getDownloading().execute(getChild(link)::getDownloader);
+                    }
+                }
+            } catch (IOException ignored) {
+            } finally {
+                latch.dec();
+            }
+        };
     }
 }

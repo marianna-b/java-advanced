@@ -5,33 +5,28 @@ import java.util.concurrent.*;
 
 class CrawlerInvoke {
 
-    private final AbstractExecutorService extracting;
-    private final AbstractExecutorService downloading;
+    private final ExecutorService extracting;
+    private final ExecutorService downloading;
     private final Downloader downloader;
     private final ConcurrentMap<String, ChangedValue> hosts;
     private final ConcurrentMap<String, String> loaded;
-    private final ConcurrentMap<String, String> extracted;
     private final int perHost;
 
     CrawlerInvoke(Downloader downloader, int d, int e, int perHost) {
-        int CAPACITY = 10000000;
-
         this.downloader = downloader;
-        this.downloading = new ThreadPoolExecutor(1, d, 1, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(CAPACITY));
-        this.extracting = new ThreadPoolExecutor(1, e, 1, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(CAPACITY));
+        this.downloading = Executors.newFixedThreadPool(d);
+        this.extracting = Executors.newFixedThreadPool(e);
+
         this.perHost = perHost;
         this.hosts = new ConcurrentHashMap<>();
         this.loaded = new ConcurrentHashMap<>();
-        this.extracted = new ConcurrentHashMap<>();
     }
 
-    AbstractExecutorService getExtracting() {
+    ExecutorService getExtracting() {
         return extracting;
     }
 
-    AbstractExecutorService getDownloading() {
+    ExecutorService getDownloading() {
         return downloading;
     }
 
@@ -54,9 +49,5 @@ class CrawlerInvoke {
 
     ConcurrentMap<String, String> getLoaded() {
         return loaded;
-    }
-
-    ConcurrentMap<String, String> getExtracted() {
-        return extracted;
     }
 }

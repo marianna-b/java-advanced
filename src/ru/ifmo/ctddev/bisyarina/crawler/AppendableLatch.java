@@ -40,9 +40,10 @@ public class AppendableLatch {
      * Notifies that one event happened
      */
     public void dec() {
-        counter.decrementAndGet();
-        synchronized (this) {
-            this.notify();
+        if (counter.decrementAndGet() == 0) {
+            synchronized (this) {
+                this.notify();
+            }
         }
     }
 }

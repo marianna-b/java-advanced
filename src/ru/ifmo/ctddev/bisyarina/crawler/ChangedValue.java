@@ -1,9 +1,8 @@
 package ru.ifmo.ctddev.bisyarina.crawler;
 
 class ChangedValue {
-
-    volatile Integer value;
-    volatile Boolean changed;
+    volatile int value;
+    volatile boolean changed;
 
     ChangedValue(int value){
         this.changed = true;
