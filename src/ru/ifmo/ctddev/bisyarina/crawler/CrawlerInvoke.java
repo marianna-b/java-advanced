@@ -17,7 +17,7 @@ class CrawlerInvoke {
     private final Downloader downloader;
     private final ConcurrentMap<String, ChangedValue> hosts;
     private final Map<String, Queue<Runnable>> delayedHosts;
-    private final ConcurrentMap<String, String> loaded;
+    private final ConcurrentMap<String, Boolean> loaded;
     private final int perHost;
 
     CrawlerInvoke(Downloader downloader, int d, int e, int perHost) {
@@ -56,7 +56,7 @@ class CrawlerInvoke {
         extracting.shutdown();
     }
 
-    ConcurrentMap<String, String> getLoaded() {
+    ConcurrentMap<String, Boolean> getLoaded() {
         return loaded;
     }
 

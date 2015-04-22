@@ -46,7 +46,7 @@ class Task {
     }
 
     void getDownloader() {
-        if (invoke.getLoaded().putIfAbsent(url, url) != null) {
+        if (invoke.getLoaded().putIfAbsent(url, Boolean.TRUE) != null) {
             latch.dec();
             return;
         }
