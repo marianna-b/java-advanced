@@ -45,8 +45,15 @@ class Task {
         return new Task(s, depth + 1, neededDepth, list, latch, invoke);
     }
 
+    void addToList() {
+        synchronized (list) {
+            list.add(url);
+        }
+    }
+
     void getDownloader() {
         if (invoke.getLoaded().putIfAbsent(url, Boolean.TRUE) != null) {
+            addToList();
             latch.dec();
             return;
         }
@@ -73,6 +80,8 @@ class Task {
             Document document = invoke.getDownloader().download(url);
 
             invoke.pollToDownloading(host, this::remapDel);
+
+            addToList();
             if (checkDepth()) {
                 invoke.getExtracting().execute(getExtractor(document));
             } else {
@@ -89,9 +98,7 @@ class Task {
         return () -> {
             try {
                 List<String> links = document.extractLinks();
-                synchronized (list) {
-                    list.addAll(links);
-                }
+
                 latch.addCounter(links.size());
                 for (String link : links) {
                     invoke.getDownloading().execute(getChild(link)::getDownloader);

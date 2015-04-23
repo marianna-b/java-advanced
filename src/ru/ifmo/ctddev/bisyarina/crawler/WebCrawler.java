@@ -41,7 +41,6 @@ public class WebCrawler implements Crawler {
         List<String> list = new ArrayList<>();
         AppendableLatch latch = new AppendableLatch(1);
         Task t = new Task(url, 1, depth, list, latch, invoke);
-        list.add(url);
         invoke.getDownloading().execute(t::getDownloader);
         try {
             latch.await();
