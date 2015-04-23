@@ -40,7 +40,7 @@ public class WebCrawler implements Crawler {
     public List<String> download(String url, int depth) throws IOException {
         List<String> list = new ArrayList<>();
         AppendableLatch latch = new AppendableLatch(1);
-        Task t = new Task(url, 1, depth - 1, list, latch, invoke);
+        Task t = new Task(url, 1, depth, list, latch, invoke);
         list.add(url);
         invoke.getDownloading().execute(t::getDownloader);
         try {

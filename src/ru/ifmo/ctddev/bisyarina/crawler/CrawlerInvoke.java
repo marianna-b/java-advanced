@@ -2,13 +2,7 @@ package ru.ifmo.ctddev.bisyarina.crawler;
 
 import info.kgeorgiy.java.advanced.crawler.Downloader;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.function.BiFunction;
 
 class CrawlerInvoke {
@@ -16,7 +10,7 @@ class CrawlerInvoke {
     private final ExecutorService downloading;
     private final Downloader downloader;
     private final ConcurrentMap<String, ChangedValue> hosts;
-    private final Map<String, Queue<Runnable>> delayedHosts;
+    private final ConcurrentMap<String, BlockingQueue<Runnable>> delayedHosts;
     private final ConcurrentMap<String, Boolean> loaded;
     private final int perHost;
 
@@ -28,7 +22,7 @@ class CrawlerInvoke {
         this.perHost = perHost;
         this.hosts = new ConcurrentHashMap<>();
         this.loaded = new ConcurrentHashMap<>();
-        this.delayedHosts = new HashMap<>();
+        this.delayedHosts = new ConcurrentHashMap<>();
     }
 
     ExecutorService getExtracting() {
@@ -60,16 +54,18 @@ class CrawlerInvoke {
         return loaded;
     }
 
-    public Map<String, Queue<Runnable>> getDelayedHosts() {
+    public ConcurrentMap<String, BlockingQueue<Runnable>> getDelayedHosts() {
         return delayedHosts;
     }
 
     public void pollToDownloading(String host, BiFunction<String, ChangedValue, ChangedValue> remapDel) {
         hosts.computeIfPresent(host, remapDel);
-        synchronized (delayedHosts) {
-            Queue<Runnable> q = delayedHosts.get(host);
-            if (q != null && !q.isEmpty())
-                downloading.execute(q.poll());
-        }
+        getDelayedHosts().computeIfPresent(host, (s, runnables) -> {
+            while (!runnables.isEmpty()) {
+                Runnable r = runnables.poll();
+                downloading.execute(r);
+            }
+            return runnables;
+        });
     }
 }
