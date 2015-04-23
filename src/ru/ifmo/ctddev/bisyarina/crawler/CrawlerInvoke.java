@@ -59,13 +59,15 @@ class CrawlerInvoke {
     }
 
     public void pollToDownloading(String host, BiFunction<String, ChangedValue, ChangedValue> remapDel) {
-        hosts.computeIfPresent(host, remapDel);
-        getDelayedHosts().computeIfPresent(host, (s, runnables) -> {
-            while (!runnables.isEmpty()) {
-                Runnable r = runnables.poll();
-                downloading.execute(r);
-            }
-            return runnables;
-        });
+        synchronized (getHosts().get(host)) {
+            hosts.computeIfPresent(host, remapDel);
+            getDelayedHosts().computeIfPresent(host, (s, runnables) -> {
+                while (!runnables.isEmpty()) {
+                    Runnable r = runnables.poll();
+                    downloading.execute(r);
+                }
+                return runnables;
+            });
+        }
     }
 }

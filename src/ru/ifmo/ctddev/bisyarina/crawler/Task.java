@@ -54,14 +54,15 @@ class Task {
         try {
             host = URLUtils.getHost(url);
             invoke.getHosts().putIfAbsent(host, new ChangedValue(0));
-
-            if (!invoke.getHosts().computeIfPresent(host, this::remapAdd).changed) {
-                invoke.getDelayedHosts().putIfAbsent(host, new ArrayBlockingQueue<>(1000));
-                invoke.getDelayedHosts().computeIfPresent(host, (s, runnables) -> {
-                    runnables.add(Task.this::getDownloader);
-                    return runnables;
-                });
-                return;
+            synchronized (invoke.getHosts().get(host)) {
+                if (!invoke.getHosts().computeIfPresent(host, this::remapAdd).changed) {
+                    invoke.getDelayedHosts().putIfAbsent(host, new ArrayBlockingQueue<>(1000));
+                    invoke.getDelayedHosts().computeIfPresent(host, (s, runnables) -> {
+                        runnables.add(Task.this::getDownloader);
+                        return runnables;
+                    });
+                    return;
+                }
             }
         } catch (MalformedURLException e) {
             latch.dec();
@@ -92,7 +93,6 @@ class Task {
                     list.addAll(links);
                 }
                 latch.addCounter(links.size());
-                System.err.println(links.size());
                 for (String link : links) {
                     invoke.getDownloading().execute(getChild(link)::getDownloader);
                 }
