@@ -12,11 +12,10 @@ public class HelloUDPClient implements HelloClient {
     @Override
     public void start(String host, int port, String prefix, int requests, int threads) {
         Thread[] t = new Thread[threads];
-        DatagramSocket[] s = new DatagramSocket[threads];
         for (int i = 0; i < threads; i++) {
-        try {
-            s[i] = new DatagramSocket();
-            final int finalI = i;
+            try {
+                DatagramSocket client = new DatagramSocket();
+                final int finalI = i;
                 t[i] = new Thread(() -> {
                     int j = 0;
                     while (j < requests) {
@@ -30,26 +29,25 @@ public class HelloUDPClient implements HelloClient {
                             byte[] bufResponse = new byte[BUF_SIZE];
                             DatagramPacket respPacket = new DatagramPacket(bufResponse, bufResponse.length);
 
-                            s[finalI].send(reqPacket);
-                            s[finalI].setSoTimeout(500);
-                            s[finalI].receive(respPacket);
+                            client.send(reqPacket);
+                            client.setSoTimeout(500);
+                            client.receive(respPacket);
                             String result = new String(respPacket.getData(), respPacket.getOffset(), respPacket.getLength());
                             if (Objects.equals(result, "Hello, " + msg)) {
                                 System.out.println(result);
                                 j++;
                             }
-                        } catch (IOException ignored) {
-                        }
+                        } catch (IOException ignored) {}
                     }
                 });
                 t[i].start();
-        } catch (SocketException ignored) {}
+            } catch (SocketException ignored) {
+            }
         }
         try {
             for (Thread aT : t) {
                 aT.join();
             }
-        } catch (InterruptedException ignored) {
-        }
+        } catch (InterruptedException ignored) {}
     }
 }
