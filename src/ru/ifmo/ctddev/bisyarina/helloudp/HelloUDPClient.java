@@ -4,6 +4,7 @@ import info.kgeorgiy.java.advanced.hello.HelloClient;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.util.Objects;
 
 /**
@@ -22,7 +23,7 @@ public class HelloUDPClient implements HelloClient {
             System.out.println("Invalid args");
             return;
         }
-        if (args.length < 2) {
+        if (args.length < 5) {
             System.out.println("Too few args");
             return;
         }
@@ -50,7 +51,7 @@ public class HelloUDPClient implements HelloClient {
                     while (j < requests) {
                         try {
                             String msg = prefix + Integer.toString(finalI) + "_" + Integer.toString(j);
-                            byte[] bufRequest = msg.getBytes();
+                            byte[] bufRequest = msg.getBytes(Charset.forName("UTF-8"));
 
                             InetAddress hostAddr = InetAddress.getByName(host);
                             DatagramPacket reqPacket = new DatagramPacket(bufRequest, bufRequest.length, hostAddr, port);
@@ -61,7 +62,8 @@ public class HelloUDPClient implements HelloClient {
                             client.send(reqPacket);
                             client.setSoTimeout(500);
                             client.receive(respPacket);
-                            String result = new String(respPacket.getData(), respPacket.getOffset(), respPacket.getLength());
+                            String result = new String(respPacket.getData(), respPacket.getOffset(),
+                                    respPacket.getLength(), Charset.forName("UTF-8"));
                             if (Objects.equals(result, "Hello, " + msg)) {
                                 System.out.println(result);
                                 j++;

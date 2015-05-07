@@ -3,7 +3,10 @@ package ru.ifmo.ctddev.bisyarina.helloudp;
 import info.kgeorgiy.java.advanced.hello.HelloServer;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
+import java.nio.charset.Charset;
 
 /**
  * Class provides functionality for multithread server using UDP
@@ -47,8 +50,9 @@ public class HelloUDPServer implements HelloServer {
                             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                             server.receive(packet);
 
-                            String msg = "Hello, " + new String(packet.getData(), packet.getOffset(), packet.getLength());
-                            byte[] bufResponse = msg.getBytes();
+                            String msg = "Hello, " + new String(packet.getData(), packet.getOffset(),
+                                    packet.getLength(), Charset.forName("UTF-8"));
+                            byte[] bufResponse = msg.getBytes(Charset.forName("UTF-8"));
                             DatagramPacket packet1 = new DatagramPacket(bufResponse, bufResponse.length);
                             packet1.setSocketAddress(packet.getSocketAddress());
 
