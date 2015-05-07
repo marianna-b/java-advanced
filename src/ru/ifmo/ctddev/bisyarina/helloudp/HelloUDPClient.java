@@ -6,10 +6,39 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Objects;
 
+/**
+ * Class provides functionality for sending requests in multiple threads using UDP
+ */
 public class HelloUDPClient implements HelloClient {
-    final static int BUF_SIZE = 10020;
+    private final static int BUF_SIZE = 10020;
 
-    @Override
+    /**
+     * Provides command line interface for running client
+     * @param args [host to send requests, port to send requests, prefix to send,
+     *             amount of requests per thread, amount of threads to use]
+     */
+    public static void main(String[] args) {
+        if (args == null) {
+            System.out.println("Invalid args");
+            return;
+        }
+        if (args.length < 2) {
+            System.out.println("Too few args");
+            return;
+        }
+        HelloUDPServer s = new HelloUDPServer();
+        s.start(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+    }
+
+    /**
+     * Start client that
+     * sends requests <prefix><number_of_thread>_<number_of_request_in_tread> until response with "Hello, " prefix
+     * @param host host to send requests
+     * @param port port to send reauests
+     * @param prefix prefix of request
+     * @param requests amount of request per thread
+     * @param threads amount of threads
+     */
     public void start(String host, int port, String prefix, int requests, int threads) {
         Thread[] t = new Thread[threads];
         for (int i = 0; i < threads; i++) {
