@@ -62,7 +62,7 @@ public class HelloUDPServer implements HelloServer {
                 }).start();
             }
         } catch (SocketException e) {
-            e.printStackTrace();
+            System.err.println(e.toString());
         }
     }
 

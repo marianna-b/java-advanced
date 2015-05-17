@@ -3,15 +3,18 @@ package ru.ifmo.ctddev.bisyarina.helloudp;
 import info.kgeorgiy.java.advanced.hello.HelloClient;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.nio.charset.Charset;
-import java.util.Objects;
 
 /**
  * Class provides functionality for sending requests in multiple threads using UDP
  */
 public class HelloUDPClient implements HelloClient {
     private final static int BUF_SIZE = 10020;
+    private final static int TIMEOUT = 500;
 
     /**
      * Provides command line interface for running client
@@ -27,8 +30,9 @@ public class HelloUDPClient implements HelloClient {
             System.out.println("Too few args");
             return;
         }
-        HelloUDPServer s = new HelloUDPServer();
-        s.start(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+        HelloUDPClient s = new HelloUDPClient();
+        s.start(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]), Integer.parseInt(args[4]));
+
     }
 
     /**
@@ -52,7 +56,6 @@ public class HelloUDPClient implements HelloClient {
                         try {
                             String msg = prefix + Integer.toString(finalI) + "_" + Integer.toString(j);
                             byte[] bufRequest = msg.getBytes(Charset.forName("UTF-8"));
-
                             InetAddress hostAddr = InetAddress.getByName(host);
                             DatagramPacket reqPacket = new DatagramPacket(bufRequest, bufRequest.length, hostAddr, port);
 
@@ -60,19 +63,21 @@ public class HelloUDPClient implements HelloClient {
                             DatagramPacket respPacket = new DatagramPacket(bufResponse, bufResponse.length);
 
                             client.send(reqPacket);
-                            client.setSoTimeout(500);
+                            client.setSoTimeout(TIMEOUT);
                             client.receive(respPacket);
                             String result = new String(respPacket.getData(), respPacket.getOffset(),
                                     respPacket.getLength(), Charset.forName("UTF-8"));
-                            if (Objects.equals(result, "Hello, " + msg)) {
+                            if (result.equals("Hello, " + msg)) {
                                 System.out.println(result);
                                 j++;
                             }
-                        } catch (IOException ignored) {}
+                        } catch (IOException ignored) {
+                        }
                     }
                 });
                 t[i].start();
-            } catch (SocketException ignored) {
+            } catch (SocketException e) {
+                System.err.println(e.getMessage());
             }
         }
         try {
