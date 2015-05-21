@@ -14,16 +14,15 @@ class CopyWindow extends JFrame {
     JLabel currentSpeed, speed, timeEnd, time, timeSpent, averSpeed, timeLeft, cuSpeed;
     JLabel labels[] = {currentSpeed, speed, timeEnd, time, timeSpent, averSpeed, timeLeft, cuSpeed};
     AtomicBoolean isCanceled;
+    Timer timer;
 
     void upd(Status status) {
-        SwingUtilities.invokeLater(() -> {
-            progress.setValue(status.getPercentSize());
-            currentSpeed.setText(status.getCurrentSpeed());
-            speed.setText(status.getSpeed());
-            time.setText(status.getTime());
-            timeEnd.setText(status.getTimeLeft());
-            resizeLabels();
-        });
+        progress.setValue(status.getPercentSize());
+        currentSpeed.setText(status.getCurrentSpeed());
+        speed.setText(status.getSpeed());
+        time.setText(status.getTime());
+        timeEnd.setText(status.getTimeLeft());
+        resizeLabels();
     }
 
     CopyWindow() {
@@ -37,6 +36,7 @@ class CopyWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 isCanceled.set(true);
+                timer.stop();
                 dispose();
             }
         });

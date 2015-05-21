@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="java-advanced">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/hamcrest-core-1.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/junit-4.11.jar!/" />
+      <root url="jar://$PROJECT_DIR$/quickcheck-0.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/IterativeParallelismTest.jar!/" />
+      <root url="jar://$PROJECT_DIR$/ParallelMapperTest.jar!/" />
+      <root url="jar://$PROJECT_DIR$/ImplementorTest.jar!/" />
+      <root url="jar://$PROJECT_DIR$/jsoup-1.8.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/WebCrawlerTest.jar!/" />
+      <root url="jar://$PROJECT_DIR$/HelloUDPTest.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

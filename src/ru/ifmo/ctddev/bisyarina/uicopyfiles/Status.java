@@ -36,7 +36,6 @@ class Status {
         if (speed == 0)
             return "infinity";
         long curr = ((size - currSize) * 1000) / speed;
-        System.err.println(curr);
         return toStringTime(curr);
     }
     String getTime(){

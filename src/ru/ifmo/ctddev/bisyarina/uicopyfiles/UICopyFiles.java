@@ -29,7 +29,6 @@ public class UICopyFiles {
         } catch (IOException e) {
             System.err.println(e.toString());
         }
-
     }
 
     void copy(File from, File to) throws IOException {
@@ -66,31 +65,22 @@ public class UICopyFiles {
         try {
             status = new Status(getFileSize(from));
             form = new CopyWindow();
-
-            Runnable update = () -> {
-                while (!form.isCanceled.get()) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        System.err.println(e.toString());
-                    }
+            form.timer = new Timer(1000, a -> {
+                if (!form.isCanceled.get()) {
                     status.update(currRead.getAndSet(0));
                     form.upd(status);
                 }
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    System.err.println(e.toString());
-                }
-            };
-            Thread thread = new Thread(update);
-            thread.start();
+            });
+            SwingUtilities.invokeLater(form.timer::start);
             try {
                 copy(from, to);
+                SwingUtilities.invokeLater(form.timer::stop);
                 form.isCanceled.set(true);
-                SwingUtilities.invokeLater(() -> form.buttonCancel.setText("OK"));
-                thread.join();
-            } catch (IOException | InterruptedException e) {
+                SwingUtilities.invokeLater(() -> {
+                    form.buttonCancel.setText("OK");
+                    form.progress.setValue(100);
+                });
+            } catch (IOException e) {
                 System.err.println(e.toString());
             }
         } catch (IOException e) {
@@ -105,7 +95,7 @@ public class UICopyFiles {
      */
     public static void main(String[] args) {
         if (args == null) {
-            System.err.println();
+            System.err.println("Null args array");
             return;
         }
 
