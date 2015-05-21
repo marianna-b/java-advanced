@@ -8,6 +8,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Class provides functionality for file and directory copying
+ */
+
 public class UICopyFiles {
     CopyWindow form;
     Status status;
@@ -95,7 +99,10 @@ public class UICopyFiles {
     }
 
 
-
+    /**
+     * Starts copying from src to dst
+     * @param args [src, dst] file paths
+     */
     public static void main(String[] args) {
         if (args == null) {
             System.err.println();

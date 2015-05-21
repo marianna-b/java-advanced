@@ -7,7 +7,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class CopyWindow extends JFrame {
+class CopyWindow extends JFrame {
     JPanel rootPanel, infoPanel;
     JButton buttonCancel;
     JProgressBar progress;
@@ -26,7 +26,7 @@ public class CopyWindow extends JFrame {
         });
     }
 
-    public CopyWindow() {
+    CopyWindow() {
         super("Copy files");
         isCanceled = new AtomicBoolean(false);
         setContentPane(rootPanel);

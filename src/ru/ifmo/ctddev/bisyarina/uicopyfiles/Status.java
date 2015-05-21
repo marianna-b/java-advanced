@@ -1,6 +1,6 @@
 package ru.ifmo.ctddev.bisyarina.uicopyfiles;
 
-public class Status {
+class Status {
     long size;
     long currSize;
     long start;
