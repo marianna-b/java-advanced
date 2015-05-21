@@ -24,7 +24,6 @@ public class UICopyFiles {
             }
         } catch (IOException e) {
             System.err.println(e.toString());
-            return;
         }
 
     }
@@ -84,10 +83,8 @@ public class UICopyFiles {
             thread.start();
             try {
                 copy(from, to);
-                SwingUtilities.invokeLater(() -> {
-                    form.buttonCancel.setText("OK");
-                });
                 form.isCanceled.set(true);
+                SwingUtilities.invokeLater(() -> form.buttonCancel.setText("OK"));
                 thread.join();
             } catch (IOException | InterruptedException e) {
                 System.err.println(e.toString());
