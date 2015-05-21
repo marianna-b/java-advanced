@@ -11,10 +11,7 @@ public class Status {
 
     Status(long size) {
         currSize = 0;
-        if (size != 0)
-            this.size = size;
-        else
-            this.size = 10000;
+        this.size = size;
         start = System.currentTimeMillis();
         currentTime = start;
     }
@@ -24,7 +21,8 @@ public class Status {
         long tmp = System.currentTimeMillis();
         long timeUpdate = tmp - currentTime;
         currentTime = tmp;
-        currSpeed = (readRes * 1000)/ timeUpdate;
+        if (timeUpdate != 0)
+            currSpeed = (readRes * 1000)/ timeUpdate;
         speed = (currSize * 1000) / (currentTime - start);
     }
 
@@ -37,7 +35,8 @@ public class Status {
             return toStringTime(0);
         if (speed == 0)
             return "infinity";
-        long curr = size / speed;
+        long curr = ((size - currSize) * 1000) / speed;
+        System.err.println(curr);
         return toStringTime(curr);
     }
     String getTime(){
